@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "PdfWorker",
+    "slug": "pdf-worker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F8FAFC"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.alexengdev.pdfworker",
+      "infoPlist": {
+        "NSCameraUsageDescription": "PdfWorker needs camera access to scan documents.",
+        "NSPhotoLibraryUsageDescription": "PdfWorker needs photo library access to select images for conversion.",
+        "NSPhotoLibraryAddUsageDescription": "PdfWorker needs permission to save PDFs to your photo library."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F8FAFC"
+      },
+      "package": "com.alexengdev.pdfworker",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-camera",
+      "expo-image-picker",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow PdfWorker to access your photos.",
+          "savePhotosPermission": "Allow PdfWorker to save photos.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ]
+    ],
+    "scheme": "pdf-worker",
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
