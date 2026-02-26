@@ -1,6 +1,6 @@
 import * as FileSystem from 'expo-file-system';
 import { PDF_DIRECTORY } from '../constants/config';
-import type { PdfFile } from '../app/files';
+import type { PdfFile } from '../types/pdf';
 
 /**
  * Returns the path to the app's PDF directory, creating it if needed.

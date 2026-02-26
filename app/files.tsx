@@ -14,13 +14,7 @@ import { Colors } from '../constants/colors';
 import DocumentCard from '../components/DocumentCard';
 import { deletePdfFile, listPdfFiles } from '../utils/fileSystem';
 import * as Sharing from 'expo-sharing';
-
-export type PdfFile = {
-  name: string;
-  uri: string;
-  size: number;
-  modificationTime: number;
-};
+import type { PdfFile } from '../types/pdf';
 
 export default function FilesScreen() {
   const [files, setFiles] = useState<PdfFile[]>([]);

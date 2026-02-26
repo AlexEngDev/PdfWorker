@@ -47,6 +47,7 @@ PdfWorker/
 │   ├── sign.tsx         # PDF signing
 │   ├── convert.tsx      # Image-to-PDF converter
 │   └── files.tsx        # File manager
+├── assets/              # App icons and splash images (see assets/README.md)
 ├── components/
 │   ├── ActionButton.tsx
 │   ├── DocumentCard.tsx
@@ -54,6 +55,8 @@ PdfWorker/
 ├── constants/
 │   ├── colors.ts
 │   └── config.ts
+├── types/
+│   └── pdf.ts           # Shared TypeScript types
 ├── utils/
 │   ├── pdf.ts
 │   ├── fileSystem.ts
@@ -63,6 +66,9 @@ PdfWorker/
 ├── package.json
 └── tsconfig.json
 ```
+
+> **Note:** Before building, add the required image assets to the `assets/` directory.
+> See [`assets/README.md`](./assets/README.md) for the required filenames and dimensions.
 
 ## License
 
