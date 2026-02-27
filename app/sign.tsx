@@ -122,12 +122,12 @@ export default function SignScreen() {
       const filename = `signed_${Date.now()}.pdf`;
       const dest = `${dir}/${filename}`;
       const html = `
-        <html><body style="margin:0;padding:20px;background:#0F0F13;">
-          <h3 style="color:#F1F5F9;">Signed Document</h3>
-          <p style="color:#94A3B8;">Original: ${pdfName}</p>
-          <hr style="border-color:#2E2E42;"/>
-          <p style="color:#94A3B8;">Signature:</p>
-          <img src="${signatureData}" style="max-width:300px;border:2px solid #2E2E42;border-radius:12px;" />
+        <html><body style="margin:0;padding:20px;background:${Colors.background};">
+          <h3 style="color:${Colors.textPrimary};">Signed Document</h3>
+          <p style="color:${Colors.textSecondary};">Original: ${pdfName}</p>
+          <hr style="border-color:${Colors.border};"/>
+          <p style="color:${Colors.textSecondary};">Signature:</p>
+          <img src="${signatureData}" style="max-width:300px;border:2px solid ${Colors.border};border-radius:12px;" />
         </body></html>
       `;
       await savePdf(html, dest);
