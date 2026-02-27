@@ -47,6 +47,18 @@ const actions = [
     color: Colors.secondary,
   },
   {
+    label: 'Split PDF',
+    icon: 'cut' as const,
+    route: '/split' as const,
+    color: Colors.warning,
+  },
+  {
+    label: 'Compress PDF',
+    icon: 'archive' as const,
+    route: '/compress' as const,
+    color: Colors.success,
+  },
+  {
     label: 'My Files',
     icon: 'folder' as const,
     route: '/files' as const,

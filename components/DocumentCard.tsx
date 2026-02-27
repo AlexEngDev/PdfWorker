@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Animated, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
 import type { PdfFile } from '../types/pdf';
@@ -9,6 +9,7 @@ type Props = {
   file: PdfFile;
   onShare: () => void;
   onDelete: () => void;
+  onRename?: (newName: string) => void;
 };
 
 function formatDate(timestamp: number): string {
@@ -19,8 +20,10 @@ function formatDate(timestamp: number): string {
   });
 }
 
-export default function DocumentCard({ file, onShare, onDelete }: Props) {
+export default function DocumentCard({ file, onShare, onDelete, onRename }: Props) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState('');
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
@@ -36,6 +39,26 @@ export default function DocumentCard({ file, onShare, onDelete }: Props) {
     }).start();
   };
 
+  const startEditing = () => {
+    const nameWithoutExt = file.name.replace(/\.pdf$/i, '');
+    setEditName(nameWithoutExt);
+    setEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setEditing(false);
+    setEditName('');
+  };
+
+  const saveEditing = () => {
+    const trimmed = editName.trim();
+    if (trimmed && onRename) {
+      onRename(trimmed);
+    }
+    setEditing(false);
+    setEditName('');
+  };
+
   return (
     <Animated.View style={[styles.cardOuter, { transform: [{ scale: scaleAnim }] }]}>
       <Pressable
@@ -47,21 +70,50 @@ export default function DocumentCard({ file, onShare, onDelete }: Props) {
           <Ionicons name="document-text" size={28} color={Colors.danger} />
         </View>
         <View style={styles.info}>
-          <Text style={styles.name} numberOfLines={1}>
-            {file.name}
-          </Text>
-          <Text style={styles.meta}>
-            {formatDate(file.modificationTime)} · {getFileSize(file.size)}
-          </Text>
+          {editing ? (
+            <View style={styles.editRow}>
+              <TextInput
+                style={styles.editInput}
+                value={editName}
+                onChangeText={setEditName}
+                autoFocus
+                selectTextOnFocus
+                placeholder="File name"
+                placeholderTextColor={Colors.textMuted}
+              />
+              <Pressable style={styles.editButton} onPress={saveEditing}>
+                <Ionicons name="checkmark" size={18} color={Colors.success} />
+              </Pressable>
+              <Pressable style={styles.editButton} onPress={cancelEditing}>
+                <Ionicons name="close" size={18} color={Colors.danger} />
+              </Pressable>
+            </View>
+          ) : (
+            <>
+              <Text style={styles.name} numberOfLines={1}>
+                {file.name}
+              </Text>
+              <Text style={styles.meta}>
+                {formatDate(file.modificationTime)} · {getFileSize(file.size)}
+              </Text>
+            </>
+          )}
         </View>
-        <View style={styles.actions}>
-          <Pressable style={styles.actionButton} onPress={onShare}>
-            <Ionicons name="share-outline" size={20} color={Colors.primaryLight} />
-          </Pressable>
-          <Pressable style={styles.actionButton} onPress={onDelete}>
-            <Ionicons name="trash-outline" size={20} color={Colors.danger} />
-          </Pressable>
-        </View>
+        {!editing && (
+          <View style={styles.actions}>
+            {onRename && (
+              <Pressable style={styles.actionButton} onPress={startEditing}>
+                <Ionicons name="pencil-outline" size={20} color={Colors.warning} />
+              </Pressable>
+            )}
+            <Pressable style={styles.actionButton} onPress={onShare}>
+              <Ionicons name="share-outline" size={20} color={Colors.primaryLight} />
+            </Pressable>
+            <Pressable style={styles.actionButton} onPress={onDelete}>
+              <Ionicons name="trash-outline" size={20} color={Colors.danger} />
+            </Pressable>
+          </View>
+        )}
       </Pressable>
     </Animated.View>
   );
@@ -115,5 +167,26 @@ const styles = StyleSheet.create({
   actionButton: {
     padding: 8,
     borderRadius: 12,
+  },
+  editRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  editInput: {
+    flex: 1,
+    backgroundColor: Colors.surfaceHigh,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    color: Colors.textPrimary,
+    fontSize: 14,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  editButton: {
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: Colors.surfaceHigh,
   },
 });

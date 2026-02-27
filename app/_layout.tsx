@@ -100,6 +100,24 @@ export default function RootLayout() {
         }}
       />
       <Tabs.Screen
+        name="split"
+        options={{
+          title: 'Split',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="cut-outline" activeName="cut" color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="compress"
+        options={{
+          title: 'Compress',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="archive-outline" activeName="archive" color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="files"
         options={{
           title: 'Files',
