@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  FlatList,
   Image,
   StyleSheet,
   Text,
@@ -16,10 +17,14 @@ import { Colors } from '../constants/colors';
 import { createPdfFromImages } from '../utils/pdf';
 import { getPdfDirectory } from '../utils/fileSystem';
 
+type Mode = 'camera' | 'preview' | 'saving';
+
 export default function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [pages, setPages] = useState<string[]>([]);
+  const [mode, setMode] = useState<Mode>('camera');
   const [saving, setSaving] = useState(false);
+  const [previewIndex, setPreviewIndex] = useState<number>(0);
   const cameraRef = useRef<CameraView>(null);
 
   useEffect(() => {
@@ -38,26 +43,56 @@ export default function ScanScreen() {
         [{ resize: { width: 1200 } }],
         { compress: 0.85, format: SaveFormat.JPEG }
       );
-      setPhotoUri(processed.uri);
+      setPages((prev) => {
+        const next = [...prev, processed.uri];
+        setPreviewIndex(next.length - 1);
+        return next;
+      });
+      setMode('preview');
     } catch {
       Alert.alert('Error', 'Failed to take photo.');
     }
   };
 
+  const retakeLast = () => {
+    setPages((prev) => prev.slice(0, -1));
+    setMode('camera');
+  };
+
+  const clearAll = () => {
+    setPages([]);
+    setMode('camera');
+  };
+
   const savePdf = async () => {
-    if (!photoUri) return;
+    if (pages.length === 0) return;
     setSaving(true);
+    setMode('saving');
     try {
       const dir = await getPdfDirectory();
       const filename = `scan_${Date.now()}.pdf`;
-      await createPdfFromImages([photoUri], `${dir}/${filename}`);
+      await createPdfFromImages(pages, `${dir}/${filename}`);
       Alert.alert('Success', `PDF saved as ${filename}`);
-      setPhotoUri(null);
+      setPages([]);
+      setMode('camera');
     } catch {
       Alert.alert('Error', 'Failed to save PDF.');
+      setMode('preview');
     } finally {
       setSaving(false);
     }
+  };
+
+  const removePage = (index: number) => {
+    setPages((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      if (next.length === 0) {
+        setMode('camera');
+      } else {
+        setPreviewIndex(Math.min(previewIndex, next.length - 1));
+      }
+      return next;
+    });
   };
 
   if (!permission) {
@@ -79,41 +114,107 @@ export default function ScanScreen() {
     );
   }
 
-  return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      {photoUri ? (
-        <View style={styles.previewContainer}>
-          <Image source={{ uri: photoUri }} style={styles.preview} resizeMode="contain" />
-          <View style={styles.actions}>
-            <TouchableOpacity
-              style={[styles.button, styles.secondaryButton]}
-              onPress={() => setPhotoUri(null)}
-            >
-              <Ionicons name="camera-outline" size={20} color={Colors.primary} />
-              <Text style={[styles.buttonText, styles.secondaryButtonText]}>Retake</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={savePdf} disabled={saving}>
-              {saving ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <>
-                  <Ionicons name="save-outline" size={20} color="#fff" />
-                  <Text style={styles.buttonText}>Save PDF</Text>
-                </>
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
-      ) : (
+  if (mode === 'camera') {
+    return (
+      <SafeAreaView style={styles.container} edges={['bottom']}>
         <View style={styles.cameraContainer}>
           <CameraView ref={cameraRef} style={styles.camera} facing="back" />
+          {pages.length > 0 && (
+            <View style={styles.pageBadge}>
+              <Text style={styles.pageBadgeText}>{pages.length} page{pages.length !== 1 ? 's' : ''}</Text>
+            </View>
+          )}
           <View style={styles.cameraActions}>
             <TouchableOpacity style={styles.captureButton} onPress={takePhoto}>
               <Ionicons name="camera" size={32} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
-      )}
+      </SafeAreaView>
+    );
+  }
+
+  // preview or saving mode
+  return (
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <View style={styles.previewContainer}>
+        <Text style={styles.pageCounter}>{pages.length} page{pages.length !== 1 ? 's' : ''} scanned</Text>
+
+        <Image
+          source={{ uri: pages[previewIndex] }}
+          style={styles.preview}
+          resizeMode="contain"
+        />
+
+        {/* Thumbnail strip */}
+        <FlatList
+          data={pages}
+          keyExtractor={(item, index) => `${item}-${index}`}
+          horizontal
+          style={styles.thumbnailList}
+          contentContainerStyle={styles.thumbnailContent}
+          renderItem={({ item, index }) => (
+            <TouchableOpacity
+              onPress={() => setPreviewIndex(index)}
+              style={[
+                styles.thumbnailWrapper,
+                index === previewIndex && styles.thumbnailSelected,
+              ]}
+            >
+              <Image source={{ uri: item }} style={styles.thumbnail} />
+              <TouchableOpacity
+                style={styles.thumbnailRemove}
+                onPress={() => removePage(index)}
+              >
+                <Ionicons name="close-circle" size={18} color={Colors.danger} />
+              </TouchableOpacity>
+            </TouchableOpacity>
+          )}
+        />
+
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={[styles.button, styles.secondaryButton]}
+            onPress={() => setMode('camera')}
+          >
+            <Ionicons name="add-circle-outline" size={20} color={Colors.primary} />
+            <Text style={[styles.buttonText, styles.secondaryButtonText]}>Add Page</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, styles.secondaryButton]}
+            onPress={retakeLast}
+          >
+            <Ionicons name="camera-outline" size={20} color={Colors.primary} />
+            <Text style={[styles.buttonText, styles.secondaryButtonText]}>Retake</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={[styles.button, styles.dangerButton]}
+            onPress={clearAll}
+          >
+            <Ionicons name="trash-outline" size={20} color={Colors.danger} />
+            <Text style={[styles.buttonText, styles.dangerButtonText]}>Clear All</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, saving && styles.buttonDisabled]}
+            onPress={savePdf}
+            disabled={saving}
+          >
+            {saving ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>
+                <Ionicons name="save-outline" size={20} color="#fff" />
+                <Text style={styles.buttonText}>Save PDF</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -139,6 +240,20 @@ const styles = StyleSheet.create({
   camera: {
     flex: 1,
   },
+  pageBadge: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  pageBadgeText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+  },
   cameraActions: {
     position: 'absolute',
     bottom: 32,
@@ -163,15 +278,49 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     padding: 16,
+    gap: 12,
+  },
+  pageCounter: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    fontWeight: '500',
   },
   preview: {
     flex: 1,
     borderRadius: 12,
   },
+  thumbnailList: {
+    flexGrow: 0,
+  },
+  thumbnailContent: {
+    gap: 8,
+    paddingHorizontal: 4,
+  },
+  thumbnailWrapper: {
+    position: 'relative',
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  thumbnailSelected: {
+    borderColor: Colors.primary,
+  },
+  thumbnail: {
+    width: 56,
+    height: 56,
+    borderRadius: 6,
+  },
+  thumbnailRemove: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: Colors.card,
+    borderRadius: 10,
+  },
   actions: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 16,
   },
   button: {
     flex: 1,
@@ -188,6 +337,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 16,
   },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
   secondaryButton: {
     backgroundColor: Colors.card,
     borderWidth: 1.5,
@@ -195,5 +347,13 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     color: Colors.primary,
+  },
+  dangerButton: {
+    backgroundColor: Colors.card,
+    borderWidth: 1.5,
+    borderColor: Colors.danger,
+  },
+  dangerButtonText: {
+    color: Colors.danger,
   },
 });

@@ -5,8 +5,11 @@ A clean, modern PDF utility app built with **React Native** and **Expo**.
 ## Features
 
 - 📷 **Scan Documents** — Use your device camera to capture and save documents as PDFs
+- 📄 **Multi-page Scan** — Capture multiple pages in a single scan session and save them as one PDF; reorder, retake, or remove individual pages before saving
 - ✍️ **Sign PDFs** — Pick a PDF and draw your signature directly on screen
+- 💾 **Saved Signatures** — Save frequently used signatures and reuse them without redrawing; manage your signature library from the Sign screen
 - 🖼️ **Convert Images to PDF** — Select multiple photos and merge them into a single PDF
+- 🔀 **Merge PDFs** — Combine multiple existing PDF files into one; reorder or remove files before merging
 - 📂 **My Files** — Browse, share, and delete your saved PDFs
 
 ## Tech Stack
