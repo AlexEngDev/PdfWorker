@@ -1,7 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
-import type { PdfFile } from '../app/files';
+import type { PdfFile } from '../types/pdf';
 import { getFileSize } from '../utils/fileSystem';
 
 type Props = {
