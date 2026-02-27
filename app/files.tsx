@@ -14,7 +14,7 @@ import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
 import DocumentCard from '../components/DocumentCard';
-import { deletePdfFile, listPdfFiles, renamePdfFile } from '../utils/fileSystem';
+import { deletePdfFile, listPdfFiles, renamePdfFile, sanitizeFileName } from '../utils/fileSystem';
 import * as Sharing from 'expo-sharing';
 import type { PdfFile } from '../types/pdf';
 
@@ -88,12 +88,13 @@ export default function FilesScreen() {
       setFiles((prev) =>
         prev.map((f) =>
           f.uri === file.uri
-            ? { ...f, uri: newUri, name: `${newName.replace(/[^a-zA-Z0-9_\-. ]/g, '_')}.pdf` }
+            ? { ...f, uri: newUri, name: `${sanitizeFileName(newName)}.pdf` }
             : f
         )
       );
-    } catch {
-      Alert.alert('Error', 'Failed to rename file.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to rename file.';
+      Alert.alert('Error', message);
     }
   };
 

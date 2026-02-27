@@ -60,8 +60,25 @@ export function getFileSize(bytes: number): string {
  */
 export async function renamePdfFile(oldUri: string, newName: string): Promise<string> {
   const dir = oldUri.substring(0, oldUri.lastIndexOf('/'));
-  const sanitized = newName.replace(/[^a-zA-Z0-9_\-. ]/g, '_');
+  const sanitized = newName
+    .replace(/\.\./g, '_')
+    .replace(/[^a-zA-Z0-9_\- ]/g, '_');
   const newUri = `${dir}/${sanitized}.pdf`;
+
+  const existing = await FileSystem.getInfoAsync(newUri);
+  if (existing.exists && newUri !== oldUri) {
+    throw new Error('A file with that name already exists.');
+  }
+
   await FileSystem.moveAsync({ from: oldUri, to: newUri });
   return newUri;
+}
+
+/**
+ * Sanitizes a file name by removing unsafe characters.
+ */
+export function sanitizeFileName(name: string): string {
+  return name
+    .replace(/\.\./g, '_')
+    .replace(/[^a-zA-Z0-9_\- ]/g, '_');
 }
