@@ -54,3 +54,14 @@ export function getFileSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
+
+/**
+ * Renames a PDF file. Returns the new URI.
+ */
+export async function renamePdfFile(oldUri: string, newName: string): Promise<string> {
+  const dir = oldUri.substring(0, oldUri.lastIndexOf('/'));
+  const sanitized = newName.replace(/[^a-zA-Z0-9_\-. ]/g, '_');
+  const newUri = `${dir}/${sanitized}.pdf`;
+  await FileSystem.moveAsync({ from: oldUri, to: newUri });
+  return newUri;
+}
