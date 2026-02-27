@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  FlatList,
   Image,
   StyleSheet,
   Text,
@@ -16,10 +17,12 @@ import { Colors } from '../constants/colors';
 import { createPdfFromImages } from '../utils/pdf';
 import { getPdfDirectory } from '../utils/fileSystem';
 
+type ScanMode = 'camera' | 'preview' | 'saving';
+
 export default function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [pages, setPages] = useState<string[]>([]);
+  const [mode, setMode] = useState<ScanMode>('camera');
   const cameraRef = useRef<CameraView>(null);
 
   useEffect(() => {
@@ -38,25 +41,57 @@ export default function ScanScreen() {
         [{ resize: { width: 1200 } }],
         { compress: 0.85, format: SaveFormat.JPEG }
       );
-      setPhotoUri(processed.uri);
+      setPages((prev) => [...prev, processed.uri]);
+      setMode('preview');
     } catch {
       Alert.alert('Error', 'Failed to take photo.');
     }
   };
 
+  const retakeLast = () => {
+    setPages((prev) => prev.slice(0, -1));
+    setMode('camera');
+  };
+
+  const addPage = () => {
+    setMode('camera');
+  };
+
+  const removePage = (index: number) => {
+    setPages((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      if (next.length === 0) setMode('camera');
+      return next;
+    });
+  };
+
+  const clearAll = () => {
+    Alert.alert('Clear All', 'Remove all scanned pages?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Clear',
+        style: 'destructive',
+        onPress: () => {
+          setPages([]);
+          setMode('camera');
+        },
+      },
+    ]);
+  };
+
   const savePdf = async () => {
-    if (!photoUri) return;
-    setSaving(true);
+    if (pages.length === 0) return;
+    setMode('saving');
     try {
       const dir = await getPdfDirectory();
       const filename = `scan_${Date.now()}.pdf`;
-      await createPdfFromImages([photoUri], `${dir}/${filename}`);
-      Alert.alert('Success', `PDF saved as ${filename}`);
-      setPhotoUri(null);
+      await createPdfFromImages(pages, `${dir}/${filename}`);
+      Alert.alert('Success', `PDF saved as ${filename} (${pages.length} pages)`);
+      setPages([]);
+      setMode('camera');
     } catch {
       Alert.alert('Error', 'Failed to save PDF.');
-    } finally {
-      setSaving(false);
+      setMode('preview');
     }
   };
 
@@ -81,37 +116,88 @@ export default function ScanScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      {photoUri ? (
-        <View style={styles.previewContainer}>
-          <Image source={{ uri: photoUri }} style={styles.preview} resizeMode="contain" />
-          <View style={styles.actions}>
-            <TouchableOpacity
-              style={[styles.button, styles.secondaryButton]}
-              onPress={() => setPhotoUri(null)}
-            >
-              <Ionicons name="camera-outline" size={20} color={Colors.primary} />
-              <Text style={[styles.buttonText, styles.secondaryButtonText]}>Retake</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={savePdf} disabled={saving}>
-              {saving ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <>
-                  <Ionicons name="save-outline" size={20} color="#fff" />
-                  <Text style={styles.buttonText}>Save PDF</Text>
-                </>
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
-      ) : (
+      {mode === 'camera' ? (
         <View style={styles.cameraContainer}>
           <CameraView ref={cameraRef} style={styles.camera} facing="back" />
+          {pages.length > 0 && (
+            <View style={styles.pageCounter}>
+              <Text style={styles.pageCounterText}>
+                {pages.length} {pages.length === 1 ? 'page' : 'pages'} scanned
+              </Text>
+            </View>
+          )}
           <View style={styles.cameraActions}>
             <TouchableOpacity style={styles.captureButton} onPress={takePhoto}>
               <Ionicons name="camera" size={32} color="#fff" />
             </TouchableOpacity>
           </View>
+        </View>
+      ) : (
+        <View style={styles.previewContainer}>
+          {mode === 'saving' ? (
+            <View style={styles.savingOverlay}>
+              <ActivityIndicator size="large" color={Colors.primary} />
+              <Text style={styles.savingText}>Saving PDF...</Text>
+            </View>
+          ) : (
+            <>
+              <Image
+                source={{ uri: pages[pages.length - 1] }}
+                style={styles.preview}
+                resizeMode="contain"
+              />
+              <Text style={styles.previewCounter}>
+                Page {pages.length} of {pages.length} &middot; {pages.length}{' '}
+                {pages.length === 1 ? 'page' : 'pages'} scanned
+              </Text>
+              <View style={styles.actions}>
+                <TouchableOpacity
+                  style={[styles.button, styles.secondaryButton]}
+                  onPress={retakeLast}
+                >
+                  <Ionicons name="refresh-outline" size={20} color={Colors.primary} />
+                  <Text style={[styles.buttonText, styles.secondaryButtonText]}>Retake</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={addPage}>
+                  <Ionicons name="add-circle-outline" size={20} color="#fff" />
+                  <Text style={styles.buttonText}>Add Page</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.actions}>
+                <TouchableOpacity
+                  style={[styles.button, styles.dangerButton]}
+                  onPress={clearAll}
+                >
+                  <Ionicons name="trash-outline" size={20} color="#fff" />
+                  <Text style={styles.buttonText}>Clear All</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.button, styles.successButton]} onPress={savePdf}>
+                  <Ionicons name="save-outline" size={20} color="#fff" />
+                  <Text style={styles.buttonText}>Save PDF</Text>
+                </TouchableOpacity>
+              </View>
+              {pages.length > 0 && (
+                <FlatList
+                  horizontal
+                  data={pages}
+                  keyExtractor={(_, index) => index.toString()}
+                  contentContainerStyle={styles.thumbnailList}
+                  renderItem={({ item, index }) => (
+                    <View style={styles.thumbnailWrapper}>
+                      <Image source={{ uri: item }} style={styles.thumbnail} />
+                      <TouchableOpacity
+                        style={styles.thumbnailRemove}
+                        onPress={() => removePage(index)}
+                      >
+                        <Ionicons name="close-circle" size={20} color={Colors.danger} />
+                      </TouchableOpacity>
+                      <Text style={styles.thumbnailLabel}>{index + 1}</Text>
+                    </View>
+                  )}
+                />
+              )}
+            </>
+          )}
         </View>
       )}
     </SafeAreaView>
@@ -138,6 +224,20 @@ const styles = StyleSheet.create({
   },
   camera: {
     flex: 1,
+  },
+  pageCounter: {
+    position: 'absolute',
+    top: 16,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  pageCounterText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
   },
   cameraActions: {
     position: 'absolute',
@@ -168,10 +268,28 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 12,
   },
+  previewCounter: {
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+    marginTop: 8,
+  },
+  savingOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+  },
+  savingText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+  },
   actions: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 16,
+    marginTop: 12,
   },
   button: {
     flex: 1,
@@ -195,5 +313,39 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     color: Colors.primary,
+  },
+  dangerButton: {
+    backgroundColor: Colors.danger,
+  },
+  successButton: {
+    backgroundColor: Colors.success,
+  },
+  thumbnailList: {
+    paddingTop: 12,
+    gap: 8,
+  },
+  thumbnailWrapper: {
+    position: 'relative',
+    marginRight: 8,
+  },
+  thumbnail: {
+    width: 60,
+    height: 80,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  thumbnailRemove: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: Colors.card,
+    borderRadius: 10,
+  },
+  thumbnailLabel: {
+    textAlign: 'center',
+    fontSize: 11,
+    color: Colors.textSecondary,
+    marginTop: 2,
   },
 });
