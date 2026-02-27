@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Animated,
   FlatList,
   Image,
   StyleSheet,
@@ -19,6 +20,15 @@ import { getPdfDirectory } from '../utils/fileSystem';
 export default function ConvertScreen() {
   const [images, setImages] = useState<string[]>([]);
   const [converting, setConverting] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
 
   const pickImages = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -56,14 +66,23 @@ export default function ConvertScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      <View style={styles.content}>
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         <TouchableOpacity style={styles.pickButton} onPress={pickImages}>
-          <Ionicons name="images-outline" size={24} color={Colors.primary} />
-          <Text style={styles.pickButtonText}>Add Images</Text>
+          <View style={styles.pickIconWrapper}>
+            <Ionicons name="images" size={22} color={Colors.accent} />
+          </View>
+          <View style={styles.pickTextWrapper}>
+            <Text style={styles.pickButtonTitle}>Add Images</Text>
+            <Text style={styles.pickButtonSubtext}>Select photos from gallery</Text>
+          </View>
+          <Ionicons name="add-circle" size={24} color={Colors.accent} />
         </TouchableOpacity>
 
         {images.length > 0 && (
-          <Text style={styles.countText}>{images.length} image(s) selected</Text>
+          <View style={styles.countBadge}>
+            <Ionicons name="images" size={14} color={Colors.primaryLight} />
+            <Text style={styles.countText}>{images.length} image(s) selected</Text>
+          </View>
         )}
 
         <FlatList
@@ -78,7 +97,7 @@ export default function ConvertScreen() {
                 style={styles.removeButton}
                 onPress={() => removeImage(item)}
               >
-                <Ionicons name="close-circle" size={20} color={Colors.danger} />
+                <Ionicons name="close-circle" size={22} color={Colors.danger} />
               </TouchableOpacity>
             </View>
           )}
@@ -94,12 +113,12 @@ export default function ConvertScreen() {
             <ActivityIndicator color="#fff" />
           ) : (
             <>
-              <Ionicons name="document-text-outline" size={20} color="#fff" />
+              <Ionicons name="document-text" size={20} color="#fff" />
               <Text style={styles.buttonText}>Convert to PDF</Text>
             </>
           )}
         </TouchableOpacity>
-      </View>
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -113,26 +132,59 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     gap: 16,
+    paddingBottom: 100,
   },
   pickButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    backgroundColor: Colors.card,
-    borderRadius: 12,
+    gap: 14,
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
     padding: 16,
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-    borderStyle: 'dashed',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  pickButtonText: {
-    color: Colors.primary,
+  pickIconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: Colors.accent + '1A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pickTextWrapper: {
+    flex: 1,
+  },
+  pickButtonTitle: {
+    color: Colors.textPrimary,
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  pickButtonSubtext: {
+    color: Colors.textMuted,
+    fontSize: 13,
+    fontWeight: '400',
+    marginTop: 2,
+  },
+  countBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: Colors.surfaceHigh,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
   },
   countText: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.textSecondary,
+    fontWeight: '600',
   },
   list: {
     flex: 1,
@@ -150,23 +202,28 @@ const styles = StyleSheet.create({
   thumbnail: {
     width: '100%',
     height: '100%',
-    borderRadius: 8,
+    borderRadius: 12,
   },
   removeButton: {
     position: 'absolute',
     top: -6,
     right: -6,
-    backgroundColor: Colors.card,
-    borderRadius: 10,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
   },
   button: {
     flexDirection: 'row',
     backgroundColor: Colors.primary,
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: 14,
+    paddingVertical: 16,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   buttonDisabled: {
     opacity: 0.5,

@@ -1,7 +1,8 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Animated,
   FlatList,
   RefreshControl,
   StyleSheet,
@@ -10,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
 import DocumentCard from '../components/DocumentCard';
 import { deletePdfFile, listPdfFiles } from '../utils/fileSystem';
@@ -20,6 +22,15 @@ export default function FilesScreen() {
   const [files, setFiles] = useState<PdfFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
 
   const loadFiles = useCallback(async () => {
     try {
@@ -81,36 +92,43 @@ export default function FilesScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      <FlatList
-        data={files}
-        keyExtractor={(item) => item.uri}
-        contentContainerStyle={styles.list}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => {
-              setRefreshing(true);
-              loadFiles();
-            }}
-            colors={[Colors.primary]}
-          />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No PDFs found.</Text>
-            <Text style={styles.emptySubtext}>
-              Scan, convert or sign a document to get started.
-            </Text>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <DocumentCard
-            file={item}
-            onShare={() => handleShare(item)}
-            onDelete={() => handleDelete(item)}
-          />
-        )}
-      />
+      <Animated.View style={[styles.flex1, { opacity: fadeAnim }]}>
+        <FlatList
+          data={files}
+          keyExtractor={(item) => item.uri}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                loadFiles();
+              }}
+              tintColor={Colors.primary}
+              colors={[Colors.primary]}
+            />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <View style={styles.emptyIconWrapper}>
+                <Ionicons name="folder-open" size={40} color={Colors.textMuted} />
+              </View>
+              <Text style={styles.emptyText}>No PDFs found</Text>
+              <Text style={styles.emptySubtext}>
+                Scan, convert or sign a document to get started.
+              </Text>
+            </View>
+          }
+          renderItem={({ item }) => (
+            <DocumentCard
+              file={item}
+              onShare={() => handleShare(item)}
+              onDelete={() => handleDelete(item)}
+            />
+          )}
+        />
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -119,6 +137,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  flex1: {
+    flex: 1,
   },
   centered: {
     flex: 1,
@@ -129,20 +150,33 @@ const styles = StyleSheet.create({
   list: {
     padding: 16,
     gap: 12,
+    paddingBottom: 100,
   },
   emptyContainer: {
     alignItems: 'center',
     paddingTop: 80,
+    gap: 10,
+  },
+  emptyIconWrapper: {
+    width: 72,
+    height: 72,
+    borderRadius: 22,
+    backgroundColor: Colors.surfaceHigh,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '800',
     color: Colors.textPrimary,
-    marginBottom: 8,
+    letterSpacing: -0.5,
   },
   emptySubtext: {
     fontSize: 14,
     color: Colors.textSecondary,
     textAlign: 'center',
+    fontWeight: '400',
+    lineHeight: 22,
   },
 });

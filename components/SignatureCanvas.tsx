@@ -30,12 +30,14 @@ const SignatureCanvasComponent = forwardRef<SignatureCanvasRef, Props>(
           descriptionText=""
           clearText="Clear"
           confirmText="Save"
+          backgroundColor="#FFFFFF"
+          penColor="#1E293B"
           webStyle={`
-            .m-signature-pad { box-shadow: none; border: 1px solid ${Colors.border}; border-radius: 12px; }
-            .m-signature-pad--body { border: none; }
-            .m-signature-pad--footer { background: ${Colors.background}; padding: 8px; }
-            .button.clear { background: transparent; border: 1.5px solid ${Colors.danger}; color: ${Colors.danger}; border-radius: 8px; }
-            .button.save { background: ${Colors.primary}; color: #fff; border-radius: 8px; }
+            .m-signature-pad { box-shadow: none; border: none; border-radius: 16px; }
+            .m-signature-pad--body { border: none; background: #FFFFFF; border-radius: 16px; }
+            .m-signature-pad--footer { background: ${Colors.surfaceHigh}; padding: 10px 12px; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; }
+            .button.clear { background: transparent; border: 1.5px solid ${Colors.danger}; color: ${Colors.danger}; border-radius: 12px; font-weight: 600; }
+            .button.save { background: ${Colors.primary}; color: #fff; border-radius: 12px; font-weight: 600; }
           `}
           style={styles.canvas}
         />
@@ -50,13 +52,13 @@ export default SignatureCanvasComponent;
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 12,
+    borderRadius: 16,
     overflow: 'hidden',
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: Colors.border,
-    backgroundColor: Colors.card,
+    backgroundColor: '#FFFFFF',
   },
   canvas: {
-    height: 200,
+    height: 220,
   },
 });

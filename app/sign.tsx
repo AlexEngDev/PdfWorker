@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Animated,
   FlatList,
   Image,
   ScrollView,
@@ -34,6 +35,15 @@ export default function SignScreen() {
   const [signatureMode, setSignatureMode] = useState<SignatureMode>('choose');
   const [savedSignatures, setSavedSignatures] = useState<SavedSignature[]>([]);
   const signatureRef = useRef<{ clearSignature: () => void }>(null);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
 
   const loadSignatures = useCallback(async () => {
     const sigs = await getSavedSignatures();
@@ -112,18 +122,17 @@ export default function SignScreen() {
       const filename = `signed_${Date.now()}.pdf`;
       const dest = `${dir}/${filename}`;
       const html = `
-        <html><body style="margin:0;padding:20px;">
-          <h3 style="color:#1E293B;">Signed Document</h3>
-          <p style="color:#64748B;">Original: ${pdfName}</p>
-          <hr/>
-          <p style="color:#64748B;">Signature:</p>
-          <img src="${signatureData}" style="max-width:300px;border:1px solid #E2E8F0;border-radius:8px;" />
+        <html><body style="margin:0;padding:20px;background:${Colors.background};">
+          <h3 style="color:${Colors.textPrimary};">Signed Document</h3>
+          <p style="color:${Colors.textSecondary};">Original: ${pdfName}</p>
+          <hr style="border-color:${Colors.border};"/>
+          <p style="color:${Colors.textSecondary};">Signature:</p>
+          <img src="${signatureData}" style="max-width:300px;border:2px solid ${Colors.border};border-radius:12px;" />
         </body></html>
       `;
       await savePdf(html, dest);
       Alert.alert('Success', `Signed PDF saved as ${filename}`);
 
-      // Offer to save signature if it was drawn (not from saved list)
       if (signatureMode === 'draw') {
         promptSaveSignature(signatureData);
       }
@@ -139,137 +148,160 @@ export default function SignScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <TouchableOpacity style={styles.pickButton} onPress={pickPdf}>
-          <Ionicons name="document-outline" size={24} color={Colors.primary} />
-          <Text style={styles.pickButtonText}>
-            {pdfUri ? pdfName : 'Select PDF Document'}
-          </Text>
-        </TouchableOpacity>
-
-        {pdfUri && signatureMode === 'choose' && (
-          <View style={styles.modeSelection}>
-            <Text style={styles.sectionTitle}>Choose Signature Method</Text>
-            <View style={styles.modeButtons}>
-              <TouchableOpacity
-                style={styles.modeCard}
-                onPress={() => setSignatureMode('draw')}
-              >
-                <Ionicons name="brush-outline" size={28} color={Colors.primary} />
-                <Text style={styles.modeCardText}>Draw New Signature</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modeCard}
-                onPress={() => {
-                  loadSignatures();
-                  setSignatureMode('saved');
-                }}
-              >
-                <Ionicons name="bookmark-outline" size={28} color={Colors.secondary} />
-                <Text style={styles.modeCardText}>Use Saved Signature</Text>
-              </TouchableOpacity>
+      <Animated.View style={[styles.flex1, { opacity: fadeAnim }]}>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <TouchableOpacity style={styles.pickButton} onPress={pickPdf}>
+            <View style={styles.pickIconWrapper}>
+              <Ionicons name="document" size={22} color={Colors.primary} />
             </View>
-          </View>
-        )}
-
-        {pdfUri && signatureMode === 'draw' && (
-          <>
-            <View style={styles.modeHeader}>
-              <Text style={styles.sectionTitle}>Draw Signature</Text>
-              <TouchableOpacity onPress={resetToChoose}>
-                <Text style={styles.backText}>Back</Text>
-              </TouchableOpacity>
+            <View style={styles.pickTextWrapper}>
+              <Text style={styles.pickButtonText}>
+                {pdfUri ? pdfName : 'Select PDF Document'}
+              </Text>
+              {!pdfUri && (
+                <Text style={styles.pickSubtext}>Tap to choose a file</Text>
+              )}
             </View>
-            <SignatureCanvasComponent
-              ref={signatureRef}
-              onSignature={handleSignature}
-            />
-            <TouchableOpacity
-              style={[styles.button, (!signatureData || saving) && styles.buttonDisabled]}
-              onPress={saveSignedPdf}
-              disabled={!signatureData || saving}
-            >
-              {saving ? (
-                <ActivityIndicator color="#fff" />
+            <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+          </TouchableOpacity>
+
+          {pdfUri && signatureMode === 'choose' && (
+            <View style={styles.modeSelection}>
+              <Text style={styles.sectionTitle}>Choose Signature Method</Text>
+              <View style={styles.modeButtons}>
+                <TouchableOpacity
+                  style={styles.modeCard}
+                  onPress={() => setSignatureMode('draw')}
+                >
+                  <View style={[styles.modeIconWrapper, { backgroundColor: Colors.primary + '1A' }]}>
+                    <Ionicons name="brush" size={28} color={Colors.primary} />
+                  </View>
+                  <Text style={styles.modeCardTitle}>Draw</Text>
+                  <Text style={styles.modeCardDesc}>Create a new signature</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.modeCard}
+                  onPress={() => {
+                    loadSignatures();
+                    setSignatureMode('saved');
+                  }}
+                >
+                  <View style={[styles.modeIconWrapper, { backgroundColor: Colors.secondary + '1A' }]}>
+                    <Ionicons name="bookmark" size={28} color={Colors.secondary} />
+                  </View>
+                  <Text style={styles.modeCardTitle}>Saved</Text>
+                  <Text style={styles.modeCardDesc}>Use existing signature</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {pdfUri && signatureMode === 'draw' && (
+            <>
+              <View style={styles.modeHeader}>
+                <Text style={styles.sectionTitle}>Draw Signature</Text>
+                <TouchableOpacity onPress={resetToChoose} style={styles.backButton}>
+                  <Ionicons name="arrow-back" size={16} color={Colors.primaryLight} />
+                  <Text style={styles.backText}>Back</Text>
+                </TouchableOpacity>
+              </View>
+              <SignatureCanvasComponent
+                ref={signatureRef}
+                onSignature={handleSignature}
+              />
+              <TouchableOpacity
+                style={[styles.button, (!signatureData || saving) && styles.buttonDisabled]}
+                onPress={saveSignedPdf}
+                disabled={!signatureData || saving}
+              >
+                {saving ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="save" size={20} color="#fff" />
+                    <Text style={styles.buttonText}>Save Signed PDF</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </>
+          )}
+
+          {pdfUri && signatureMode === 'saved' && (
+            <>
+              <View style={styles.modeHeader}>
+                <Text style={styles.sectionTitle}>Saved Signatures</Text>
+                <TouchableOpacity onPress={resetToChoose} style={styles.backButton}>
+                  <Ionicons name="arrow-back" size={16} color={Colors.primaryLight} />
+                  <Text style={styles.backText}>Back</Text>
+                </TouchableOpacity>
+              </View>
+              {savedSignatures.length === 0 ? (
+                <View style={styles.emptyState}>
+                  <View style={styles.emptyIconWrapper}>
+                    <Ionicons name="bookmark" size={36} color={Colors.textMuted} />
+                  </View>
+                  <Text style={styles.emptyText}>No saved signatures</Text>
+                  <Text style={styles.emptySubtext}>
+                    Draw a new signature and save it for future use
+                  </Text>
+                </View>
               ) : (
                 <>
-                  <Ionicons name="save-outline" size={20} color="#fff" />
-                  <Text style={styles.buttonText}>Save Signed PDF</Text>
+                  <FlatList
+                    horizontal
+                    data={savedSignatures}
+                    keyExtractor={(item) => item.id}
+                    contentContainerStyle={styles.signatureList}
+                    scrollEnabled={true}
+                    showsHorizontalScrollIndicator={false}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity
+                        style={[
+                          styles.signatureCard,
+                          signatureData === item.data && styles.signatureCardSelected,
+                        ]}
+                        onPress={() => handleSelectSaved(item)}
+                        onLongPress={() => handleDeleteSaved(item)}
+                      >
+                        <View style={styles.signaturePreviewWrapper}>
+                          <Image
+                            source={{ uri: item.data }}
+                            style={styles.signaturePreview}
+                            resizeMode="contain"
+                          />
+                        </View>
+                        <Text style={styles.signatureName} numberOfLines={1}>
+                          {item.name}
+                        </Text>
+                        <TouchableOpacity
+                          style={styles.deleteSignatureBtn}
+                          onPress={() => handleDeleteSaved(item)}
+                        >
+                          <Ionicons name="trash" size={14} color={Colors.danger} />
+                        </TouchableOpacity>
+                      </TouchableOpacity>
+                    )}
+                  />
+                  <TouchableOpacity
+                    style={[styles.button, (!signatureData || saving) && styles.buttonDisabled]}
+                    onPress={saveSignedPdf}
+                    disabled={!signatureData || saving}
+                  >
+                    {saving ? (
+                      <ActivityIndicator color="#fff" />
+                    ) : (
+                      <>
+                        <Ionicons name="save" size={20} color="#fff" />
+                        <Text style={styles.buttonText}>Save Signed PDF</Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
                 </>
               )}
-            </TouchableOpacity>
-          </>
-        )}
-
-        {pdfUri && signatureMode === 'saved' && (
-          <>
-            <View style={styles.modeHeader}>
-              <Text style={styles.sectionTitle}>Saved Signatures</Text>
-              <TouchableOpacity onPress={resetToChoose}>
-                <Text style={styles.backText}>Back</Text>
-              </TouchableOpacity>
-            </View>
-            {savedSignatures.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Ionicons name="bookmark-outline" size={40} color={Colors.border} />
-                <Text style={styles.emptyText}>No saved signatures</Text>
-                <Text style={styles.emptySubtext}>
-                  Draw a new signature and save it for future use
-                </Text>
-              </View>
-            ) : (
-              <>
-                <FlatList
-                  horizontal
-                  data={savedSignatures}
-                  keyExtractor={(item) => item.id}
-                  contentContainerStyle={styles.signatureList}
-                  scrollEnabled={true}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={[
-                        styles.signatureCard,
-                        signatureData === item.data && styles.signatureCardSelected,
-                      ]}
-                      onPress={() => handleSelectSaved(item)}
-                      onLongPress={() => handleDeleteSaved(item)}
-                    >
-                      <Image
-                        source={{ uri: item.data }}
-                        style={styles.signaturePreview}
-                        resizeMode="contain"
-                      />
-                      <Text style={styles.signatureName} numberOfLines={1}>
-                        {item.name}
-                      </Text>
-                      <TouchableOpacity
-                        style={styles.deleteSignatureBtn}
-                        onPress={() => handleDeleteSaved(item)}
-                      >
-                        <Ionicons name="trash-outline" size={16} color={Colors.danger} />
-                      </TouchableOpacity>
-                    </TouchableOpacity>
-                  )}
-                />
-                <TouchableOpacity
-                  style={[styles.button, (!signatureData || saving) && styles.buttonDisabled]}
-                  onPress={saveSignedPdf}
-                  disabled={!signatureData || saving}
-                >
-                  {saving ? (
-                    <ActivityIndicator color="#fff" />
-                  ) : (
-                    <>
-                      <Ionicons name="save-outline" size={20} color="#fff" />
-                      <Text style={styles.buttonText}>Save Signed PDF</Text>
-                    </>
-                  )}
-                </TouchableOpacity>
-              </>
-            )}
-          </>
-        )}
-      </ScrollView>
+            </>
+          )}
+        </ScrollView>
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -279,34 +311,59 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  flex1: {
+    flex: 1,
+  },
   content: {
     padding: 20,
     gap: 16,
+    paddingBottom: 100,
   },
   pickButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    backgroundColor: Colors.card,
-    borderRadius: 12,
+    gap: 14,
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
     padding: 16,
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-    borderStyle: 'dashed',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  pickButtonText: {
-    color: Colors.primary,
-    fontSize: 15,
-    fontWeight: '500',
+  pickIconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: Colors.primary + '1A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pickTextWrapper: {
     flex: 1,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+  pickButtonText: {
     color: Colors.textPrimary,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  pickSubtext: {
+    color: Colors.textMuted,
+    fontSize: 13,
+    fontWeight: '400',
+    marginTop: 2,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    letterSpacing: -0.3,
   },
   modeSelection: {
-    gap: 12,
+    gap: 14,
   },
   modeButtons: {
     flexDirection: 'row',
@@ -314,23 +371,36 @@ const styles = StyleSheet.create({
   },
   modeCard: {
     flex: 1,
-    backgroundColor: Colors.card,
-    borderRadius: 12,
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
     padding: 20,
     alignItems: 'center',
     gap: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  modeCardText: {
-    fontSize: 13,
-    fontWeight: '600',
+  modeIconWrapper: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modeCardTitle: {
+    fontSize: 16,
+    fontWeight: '700',
     color: Colors.textPrimary,
+    textAlign: 'center',
+  },
+  modeCardDesc: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: Colors.textSecondary,
     textAlign: 'center',
   },
   modeHeader: {
@@ -338,19 +408,29 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   backText: {
-    color: Colors.primary,
+    color: Colors.primaryLight,
     fontWeight: '600',
     fontSize: 14,
   },
   button: {
     flexDirection: 'row',
     backgroundColor: Colors.primary,
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: 14,
+    paddingVertical: 16,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   buttonDisabled: {
     opacity: 0.5,
@@ -363,7 +443,16 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: 'center',
     padding: 32,
-    gap: 8,
+    gap: 10,
+  },
+  emptyIconWrapper: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    backgroundColor: Colors.surfaceHigh,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   emptyText: {
     fontSize: 16,
@@ -372,18 +461,19 @@ const styles = StyleSheet.create({
   },
   emptySubtext: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: Colors.textMuted,
     textAlign: 'center',
+    lineHeight: 20,
   },
   signatureList: {
     gap: 12,
     paddingVertical: 4,
   },
   signatureCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    padding: 10,
-    width: 140,
+    backgroundColor: Colors.surfaceHigh,
+    borderRadius: 16,
+    padding: 12,
+    width: 150,
     alignItems: 'center',
     borderWidth: 2,
     borderColor: Colors.border,
@@ -392,20 +482,28 @@ const styles = StyleSheet.create({
   signatureCardSelected: {
     borderColor: Colors.primary,
   },
+  signaturePreviewWrapper: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 4,
+    width: '100%',
+  },
   signaturePreview: {
-    width: 120,
+    width: '100%',
     height: 60,
   },
   signatureName: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: '600',
     color: Colors.textPrimary,
-    marginTop: 6,
+    marginTop: 8,
   },
   deleteSignatureBtn: {
     position: 'absolute',
-    top: 4,
-    right: 4,
-    padding: 4,
+    top: 6,
+    right: 6,
+    padding: 6,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
   },
 });

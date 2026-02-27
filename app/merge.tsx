@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Animated,
   FlatList,
   StyleSheet,
   Text,
@@ -25,6 +26,15 @@ type PdfItem = {
 export default function MergeScreen() {
   const [pdfs, setPdfs] = useState<PdfItem[]>([]);
   const [merging, setMerging] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
 
   const addPdf = async () => {
     const result = await DocumentPicker.getDocumentAsync({
@@ -89,48 +99,69 @@ export default function MergeScreen() {
 
   const renderItem = ({ item, index }: { item: PdfItem; index: number }) => (
     <View style={styles.card}>
-      <View style={styles.cardInfo}>
-        <Ionicons name="document-outline" size={24} color={Colors.primary} />
-        <View style={styles.cardText}>
-          <Text style={styles.cardName} numberOfLines={1}>
-            {item.name}
-          </Text>
-          <Text style={styles.cardSize}>{getFileSize(item.size)}</Text>
+      <View style={[styles.cardLeftBorder, { backgroundColor: Colors.accent }]} />
+      <View style={styles.cardContent}>
+        <View style={styles.cardInfo}>
+          <View style={styles.cardIconWrapper}>
+            <Ionicons name="document-text" size={22} color={Colors.danger} />
+          </View>
+          <View style={styles.cardText}>
+            <Text style={styles.cardName} numberOfLines={1}>
+              {item.name}
+            </Text>
+            <Text style={styles.cardSize}>{getFileSize(item.size)}</Text>
+          </View>
         </View>
-      </View>
-      <View style={styles.cardActions}>
-        <TouchableOpacity onPress={() => moveUp(index)} disabled={index === 0}>
-          <Ionicons
-            name="arrow-up-outline"
-            size={22}
-            color={index === 0 ? Colors.border : Colors.textSecondary}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => moveDown(index)} disabled={index === pdfs.length - 1}>
-          <Ionicons
-            name="arrow-down-outline"
-            size={22}
-            color={index === pdfs.length - 1 ? Colors.border : Colors.textSecondary}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => removePdf(index)}>
-          <Ionicons name="close-circle-outline" size={22} color={Colors.danger} />
-        </TouchableOpacity>
+        <View style={styles.cardActions}>
+          <TouchableOpacity
+            onPress={() => moveUp(index)}
+            disabled={index === 0}
+            style={styles.arrowButton}
+          >
+            <Ionicons
+              name="chevron-up"
+              size={20}
+              color={index === 0 ? Colors.textMuted : Colors.primaryLight}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => moveDown(index)}
+            disabled={index === pdfs.length - 1}
+            style={styles.arrowButton}
+          >
+            <Ionicons
+              name="chevron-down"
+              size={20}
+              color={index === pdfs.length - 1 ? Colors.textMuted : Colors.primaryLight}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => removePdf(index)} style={styles.arrowButton}>
+            <Ionicons name="close-circle" size={20} color={Colors.danger} />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      <View style={styles.content}>
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         <TouchableOpacity style={styles.addButton} onPress={addPdf}>
-          <Ionicons name="add-circle-outline" size={24} color={Colors.primary} />
-          <Text style={styles.addButtonText}>Add PDF</Text>
+          <View style={styles.addIconWrapper}>
+            <Ionicons name="add-circle" size={22} color={Colors.primary} />
+          </View>
+          <View style={styles.addTextWrapper}>
+            <Text style={styles.addButtonTitle}>Add PDF</Text>
+            <Text style={styles.addButtonSubtext}>Select files to merge</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
         </TouchableOpacity>
 
         {pdfs.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="documents-outline" size={48} color={Colors.border} />
+            <View style={styles.emptyIconWrapper}>
+              <Ionicons name="documents" size={40} color={Colors.textMuted} />
+            </View>
             <Text style={styles.emptyText}>No PDFs added yet</Text>
             <Text style={styles.emptySubtext}>Tap "Add PDF" to select files to merge</Text>
           </View>
@@ -140,6 +171,7 @@ export default function MergeScreen() {
             keyExtractor={(_, index) => index.toString()}
             renderItem={renderItem}
             contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
           />
         )}
 
@@ -153,13 +185,13 @@ export default function MergeScreen() {
               <ActivityIndicator color="#fff" />
             ) : (
               <>
-                <Ionicons name="git-merge-outline" size={20} color="#fff" />
-                <Text style={styles.mergeButtonText}>Merge PDFs</Text>
+                <Ionicons name="git-merge" size={20} color="#fff" />
+                <Text style={styles.mergeButtonText}>Merge {pdfs.length} PDFs</Text>
               </>
             )}
           </TouchableOpacity>
         )}
-      </View>
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -172,62 +204,114 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
+    paddingBottom: 100,
   },
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    backgroundColor: Colors.card,
-    borderRadius: 12,
+    gap: 14,
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
     padding: 16,
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-    borderStyle: 'dashed',
+    borderWidth: 1,
+    borderColor: Colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  addButtonText: {
-    color: Colors.primary,
+  addIconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: Colors.primary + '1A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addTextWrapper: {
+    flex: 1,
+  },
+  addButtonTitle: {
+    color: Colors.textPrimary,
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  addButtonSubtext: {
+    color: Colors.textMuted,
+    fontSize: 13,
+    fontWeight: '400',
+    marginTop: 2,
   },
   emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
+  },
+  emptyIconWrapper: {
+    width: 72,
+    height: 72,
+    borderRadius: 22,
+    backgroundColor: Colors.surfaceHigh,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   emptyText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
     color: Colors.textSecondary,
+    letterSpacing: -0.3,
   },
   emptySubtext: {
-    fontSize: 13,
-    color: Colors.textSecondary,
+    fontSize: 14,
+    color: Colors.textMuted,
+    fontWeight: '400',
   },
   list: {
     paddingTop: 16,
     gap: 10,
   },
   card: {
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  cardLeftBorder: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+  },
+  cardContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: Colors.card,
-    borderRadius: 12,
     padding: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 6,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    paddingLeft: 16,
   },
   cardInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     flex: 1,
+  },
+  cardIconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: Colors.danger + '1A',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   cardText: {
     flex: 1,
@@ -241,21 +325,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textSecondary,
     marginTop: 2,
+    fontWeight: '400',
   },
   cardActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 6,
+  },
+  arrowButton: {
+    padding: 6,
+    borderRadius: 12,
   },
   mergeButton: {
     flexDirection: 'row',
     backgroundColor: Colors.primary,
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: 14,
+    paddingVertical: 16,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
     marginTop: 16,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   buttonDisabled: {
     opacity: 0.5,
