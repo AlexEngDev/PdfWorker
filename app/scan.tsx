@@ -147,7 +147,7 @@ export default function ScanScreen() {
                 resizeMode="contain"
               />
               <Text style={styles.previewCounter}>
-                Page {pages.length} of {pages.length} &middot; {pages.length}{' '}
+                Viewing latest page &middot; {pages.length}{' '}
                 {pages.length === 1 ? 'page' : 'pages'} scanned
               </Text>
               <View style={styles.actions}>

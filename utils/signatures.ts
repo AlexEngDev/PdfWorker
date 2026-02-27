@@ -6,7 +6,11 @@ const SIGNATURES_KEY = 'saved_signatures';
 export async function getSavedSignatures(): Promise<SavedSignature[]> {
   const data = await AsyncStorage.getItem(SIGNATURES_KEY);
   if (!data) return [];
-  return JSON.parse(data) as SavedSignature[];
+  try {
+    return JSON.parse(data) as SavedSignature[];
+  } catch {
+    return [];
+  }
 }
 
 export async function saveSignature(name: string, data: string): Promise<SavedSignature> {

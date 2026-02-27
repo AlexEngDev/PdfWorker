@@ -65,6 +65,11 @@ export default function SignScreen() {
     setSignatureData(sig.data);
   };
 
+  const resetToChoose = () => {
+    setSignatureMode('choose');
+    setSignatureData(null);
+  };
+
   const handleDeleteSaved = (sig: SavedSignature) => {
     Alert.alert('Delete Signature', `Delete "${sig.name}"?`, [
       { text: 'Cancel', style: 'cancel' },
@@ -171,7 +176,7 @@ export default function SignScreen() {
           <>
             <View style={styles.modeHeader}>
               <Text style={styles.sectionTitle}>Draw Signature</Text>
-              <TouchableOpacity onPress={() => { setSignatureMode('choose'); setSignatureData(null); }}>
+              <TouchableOpacity onPress={resetToChoose}>
                 <Text style={styles.backText}>Back</Text>
               </TouchableOpacity>
             </View>
@@ -200,7 +205,7 @@ export default function SignScreen() {
           <>
             <View style={styles.modeHeader}>
               <Text style={styles.sectionTitle}>Saved Signatures</Text>
-              <TouchableOpacity onPress={() => { setSignatureMode('choose'); setSignatureData(null); }}>
+              <TouchableOpacity onPress={resetToChoose}>
                 <Text style={styles.backText}>Back</Text>
               </TouchableOpacity>
             </View>
