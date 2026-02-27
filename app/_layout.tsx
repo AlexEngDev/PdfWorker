@@ -126,6 +126,10 @@ export default function RootLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="viewer"
+        options={{ href: null, headerShown: false }}
+      />
     </Tabs>
   );
 }
