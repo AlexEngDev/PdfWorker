@@ -1,4 +1,5 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRef } from 'react';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
 
@@ -10,43 +11,81 @@ type Props = {
 };
 
 export default function ActionButton({ label, icon, color = Colors.primary, onPress }: Props) {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.97,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
+
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.8}>
-      <View style={[styles.iconWrapper, { backgroundColor: color + '1A' }]}>
-        <Ionicons name={icon} size={28} color={color} />
-      </View>
-      <Text style={styles.label}>{label}</Text>
-    </TouchableOpacity>
+    <Animated.View style={[styles.animatedWrapper, { transform: [{ scale: scaleAnim }] }]}>
+      <Pressable
+        style={styles.container}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+      >
+        <View style={[styles.leftBorder, { backgroundColor: color }]} />
+        <View style={[styles.iconWrapper, { backgroundColor: color + '1A' }]}>
+          <Ionicons name={icon} size={24} color={color} />
+        </View>
+        <Text style={styles.label}>{label}</Text>
+        <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+      </Pressable>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
+  animatedWrapper: {
+    width: '100%',
+  },
   container: {
-    width: '47%',
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    padding: 20,
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 6,
-    elevation: 3,
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    padding: 16,
+    gap: 14,
     borderWidth: 1,
     borderColor: Colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  leftBorder: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
   },
   iconWrapper: {
-    width: 56,
-    height: 56,
+    width: 48,
+    height: 48,
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
   label: {
-    fontSize: 14,
+    flex: 1,
+    fontSize: 16,
     fontWeight: '600',
     color: Colors.textPrimary,
-    textAlign: 'center',
   },
 });
