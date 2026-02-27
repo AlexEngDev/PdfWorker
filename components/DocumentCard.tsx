@@ -10,6 +10,7 @@ type Props = {
   onShare: () => void;
   onDelete: () => void;
   onRename?: (newName: string) => void;
+  onView?: () => void;
 };
 
 function formatDate(timestamp: number): string {
@@ -20,7 +21,7 @@ function formatDate(timestamp: number): string {
   });
 }
 
-export default function DocumentCard({ file, onShare, onDelete, onRename }: Props) {
+export default function DocumentCard({ file, onShare, onDelete, onRename, onView }: Props) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState('');
@@ -101,6 +102,11 @@ export default function DocumentCard({ file, onShare, onDelete, onRename }: Prop
         </View>
         {!editing && (
           <View style={styles.actions}>
+            {onView && (
+              <Pressable style={styles.actionButton} onPress={onView}>
+                <Ionicons name="eye-outline" size={20} color={Colors.accent} />
+              </Pressable>
+            )}
             {onRename && (
               <Pressable style={styles.actionButton} onPress={startEditing}>
                 <Ionicons name="pencil-outline" size={20} color={Colors.warning} />

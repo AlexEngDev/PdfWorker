@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors';
 import DocumentCard from '../components/DocumentCard';
@@ -139,6 +139,7 @@ export default function FilesScreen() {
           renderItem={({ item }) => (
             <DocumentCard
               file={item}
+              onView={() => router.push({ pathname: '/viewer', params: { uri: item.uri, name: item.name } })}
               onShare={() => handleShare(item)}
               onDelete={() => handleDelete(item)}
               onRename={(newName) => handleRename(item, newName)}
