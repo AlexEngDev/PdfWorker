@@ -58,6 +58,15 @@ export default function RootLayout() {
         }}
       />
       <Tabs.Screen
+        name="merge"
+        options={{
+          title: 'Merge',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="git-merge-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="files"
         options={{
           title: 'Files',

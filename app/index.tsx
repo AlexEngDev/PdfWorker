@@ -25,6 +25,12 @@ const actions = [
     color: Colors.success,
   },
   {
+    label: 'Merge PDFs',
+    icon: 'git-merge-outline' as const,
+    route: '/merge' as const,
+    color: '#8B5CF6',
+  },
+  {
     label: 'My Files',
     icon: 'folder-outline' as const,
     route: '/files' as const,

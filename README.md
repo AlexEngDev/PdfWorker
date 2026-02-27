@@ -5,8 +5,11 @@ A clean, modern PDF utility app built with **React Native** and **Expo**.
 ## Features
 
 - 📷 **Scan Documents** — Use your device camera to capture and save documents as PDFs
+- 📑 **Multi-page Scan** — Capture multiple pages in one session and save them as a single multi-page PDF; review thumbnails, retake, or remove individual pages before saving
 - ✍️ **Sign PDFs** — Pick a PDF and draw your signature directly on screen
+- 🔖 **Saved Signatures** — Save signatures for reuse; browse and select from your saved signatures when signing a document
 - 🖼️ **Convert Images to PDF** — Select multiple photos and merge them into a single PDF
+- 🔀 **Merge PDFs** — Select two or more PDF files, reorder them, and combine into a single PDF
 - 📂 **My Files** — Browse, share, and delete your saved PDFs
 
 ## Tech Stack
@@ -43,9 +46,10 @@ PdfWorker/
 ├── app/
 │   ├── _layout.tsx      # Tab navigation root
 │   ├── index.tsx        # Home screen
-│   ├── scan.tsx         # Camera scanner
-│   ├── sign.tsx         # PDF signing
+│   ├── scan.tsx         # Camera scanner (multi-page)
+│   ├── sign.tsx         # PDF signing (with saved signatures)
 │   ├── convert.tsx      # Image-to-PDF converter
+│   ├── merge.tsx        # PDF merger
 │   └── files.tsx        # File manager
 ├── assets/              # App icons and splash images (see assets/README.md)
 ├── components/
@@ -59,6 +63,8 @@ PdfWorker/
 │   └── pdf.ts           # Shared TypeScript types
 ├── utils/
 │   ├── pdf.ts
+│   ├── pdfMerge.ts      # PDF merging utility
+│   ├── signatures.ts    # Saved signatures utility
 │   ├── fileSystem.ts
 │   └── permissions.ts
 ├── app.json
