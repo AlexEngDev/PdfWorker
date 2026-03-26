@@ -9,6 +9,8 @@ A clean, modern PDF utility app built with **React Native** and **Expo**.
 - ✍️ **Sign PDFs** — Pick a PDF and draw your signature directly on screen
 - 💾 **Saved Signatures** — Save frequently used signatures and reuse them across documents
 - 🔀 **Merge PDFs** — Combine multiple PDF files into one with drag-to-reorder support
+- ✂️ **Split PDF** — Extract specific pages or split a PDF into multiple files by page range
+- 🗜️ **Compress PDF** — Reduce the file size of a PDF with selectable quality levels
 - 🖼️ **Convert Images to PDF** — Select multiple photos and merge them into a single PDF
 - 📂 **My Files** — Browse, share, and delete your saved PDFs
 
@@ -50,6 +52,8 @@ PdfWorker/
 │   ├── sign.tsx         # PDF signing (with saved signatures)
 │   ├── convert.tsx      # Image-to-PDF converter
 │   ├── merge.tsx        # PDF merge tool
+│   ├── split.tsx        # PDF splitter (by range or page extraction)
+│   ├── compress.tsx     # PDF compression with quality levels
 │   └── files.tsx        # File manager
 ├── assets/              # App icons and splash images (see assets/README.md)
 ├── components/
@@ -65,6 +69,8 @@ PdfWorker/
 ├── utils/
 │   ├── pdf.ts
 │   ├── pdfMerge.ts
+│   ├── pdfSplit.ts
+│   ├── pdfCompress.ts
 │   ├── fileSystem.ts
 │   ├── signatures.ts
 │   └── permissions.ts
