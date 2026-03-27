@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../constants/colors';
+import { useTheme } from '../contexts/ThemeContext';
 import { createPdfFromImages } from '../utils/pdf';
 import { getPdfDirectory } from '../utils/fileSystem';
 
@@ -26,6 +26,7 @@ export default function ScanScreen() {
   const [mode, setMode] = useState<ScanMode>('camera');
   const cameraRef = useRef<CameraView>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const { colors } = useTheme();
 
   useEffect(() => {
     if (!permission?.granted) {
@@ -107,21 +108,21 @@ export default function ScanScreen() {
 
   if (!permission) {
     return (
-      <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </SafeAreaView>
     );
   }
 
   if (!permission.granted) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.permissionContainer}>
-          <View style={styles.permissionIcon}>
-            <Ionicons name="camera" size={40} color={Colors.primary} />
+          <View style={[styles.permissionIcon, { backgroundColor: colors.primary + '1A' }]}>
+            <Ionicons name="camera" size={40} color={colors.primary} />
           </View>
-          <Text style={styles.message}>Camera permission is required to scan documents.</Text>
-          <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
+          <Text style={[styles.message, { color: colors.textSecondary }]}>Camera permission is required to scan documents.</Text>
+          <TouchableOpacity style={[styles.permissionButton, { backgroundColor: colors.primary, shadowColor: colors.primary }]} onPress={requestPermission}>
             <Text style={styles.permissionButtonText}>Grant Permission</Text>
           </TouchableOpacity>
         </View>
@@ -130,23 +131,23 @@ export default function ScanScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
       <Animated.View style={[styles.fullFlex, { opacity: fadeAnim }]}>
         {mode === 'camera' ? (
           <View style={styles.cameraContainer}>
             <CameraView ref={cameraRef} style={styles.camera} facing="back" />
             {pages.length > 0 && (
-              <View style={styles.pageCounter}>
+              <View style={[styles.pageCounter, { backgroundColor: colors.surface + 'CC', borderColor: colors.border }]}>
                 <Ionicons name="documents" size={14} color="#fff" />
                 <Text style={styles.pageCounterText}>
                   {pages.length} {pages.length === 1 ? 'page' : 'pages'}
                 </Text>
               </View>
             )}
-            <View style={styles.cameraOverlay}>
+            <View style={[styles.cameraOverlay, { backgroundColor: colors.background + '99' }]}>
               <View style={styles.captureRow}>
                 {pages.length > 0 && (
-                  <TouchableOpacity style={styles.overlayButton} onPress={() => setMode('preview')}>
+                  <TouchableOpacity style={[styles.overlayButton, { backgroundColor: colors.surface + 'CC', borderColor: colors.border }]} onPress={() => setMode('preview')}>
                     <Ionicons name="images" size={22} color="#fff" />
                   </TouchableOpacity>
                 )}
@@ -154,8 +155,8 @@ export default function ScanScreen() {
                   <View style={styles.captureInner} />
                 </TouchableOpacity>
                 {pages.length > 0 && (
-                  <TouchableOpacity style={styles.overlayButton} onPress={savePdf}>
-                    <Ionicons name="checkmark" size={22} color={Colors.success} />
+                  <TouchableOpacity style={[styles.overlayButton, { backgroundColor: colors.surface + 'CC', borderColor: colors.border }]} onPress={savePdf}>
+                    <Ionicons name="checkmark" size={22} color={colors.success} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -165,8 +166,8 @@ export default function ScanScreen() {
           <View style={styles.previewContainer}>
             {mode === 'saving' ? (
               <View style={styles.savingOverlay}>
-                <ActivityIndicator size="large" color={Colors.primary} />
-                <Text style={styles.savingText}>Saving PDF...</Text>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={[styles.savingText, { color: colors.textSecondary }]}>Saving PDF...</Text>
               </View>
             ) : (
               <>
@@ -175,32 +176,32 @@ export default function ScanScreen() {
                   style={styles.preview}
                   resizeMode="contain"
                 />
-                <Text style={styles.previewCounter}>
+                <Text style={[styles.previewCounter, { color: colors.textSecondary }]}>
                   Latest page · {pages.length}{' '}
                   {pages.length === 1 ? 'page' : 'pages'} scanned
                 </Text>
                 <View style={styles.actions}>
                   <TouchableOpacity
-                    style={[styles.button, styles.secondaryButton]}
+                    style={[styles.button, { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }]}
                     onPress={retakeLast}
                   >
-                    <Ionicons name="refresh" size={20} color={Colors.primaryLight} />
-                    <Text style={[styles.buttonText, styles.secondaryButtonText]}>Retake</Text>
+                    <Ionicons name="refresh" size={20} color={colors.primaryLight} />
+                    <Text style={[styles.buttonText, { color: colors.primaryLight }]}>Retake</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.button} onPress={addPage}>
+                  <TouchableOpacity style={[styles.button, { backgroundColor: colors.primary }]} onPress={addPage}>
                     <Ionicons name="add-circle" size={20} color="#fff" />
                     <Text style={styles.buttonText}>Add Page</Text>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.actions}>
                   <TouchableOpacity
-                    style={[styles.button, styles.dangerButton]}
+                    style={[styles.button, { backgroundColor: colors.danger }]}
                     onPress={clearAll}
                   >
                     <Ionicons name="trash" size={20} color="#fff" />
                     <Text style={styles.buttonText}>Clear All</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={[styles.button, styles.successButton]} onPress={savePdf}>
+                  <TouchableOpacity style={[styles.button, { backgroundColor: colors.success }]} onPress={savePdf}>
                     <Ionicons name="save" size={20} color="#fff" />
                     <Text style={styles.buttonText}>Save PDF</Text>
                   </TouchableOpacity>
@@ -214,15 +215,15 @@ export default function ScanScreen() {
                     showsHorizontalScrollIndicator={false}
                     renderItem={({ item, index }) => (
                       <View style={styles.thumbnailWrapper}>
-                        <Image source={{ uri: item }} style={styles.thumbnail} />
+                        <Image source={{ uri: item }} style={[styles.thumbnail, { borderColor: colors.border }]} />
                         <TouchableOpacity
-                          style={styles.thumbnailRemove}
+                          style={[styles.thumbnailRemove, { backgroundColor: colors.surface }]}
                           onPress={() => removePage(index)}
                         >
-                          <Ionicons name="close-circle" size={20} color={Colors.danger} />
+                          <Ionicons name="close-circle" size={20} color={colors.danger} />
                         </TouchableOpacity>
                         <View style={styles.thumbnailBadge}>
-                          <Text style={styles.thumbnailLabel}>{index + 1}</Text>
+                          <Text style={[styles.thumbnailLabel, { color: colors.textSecondary }]}>{index + 1}</Text>
                         </View>
                       </View>
                     )}
@@ -240,7 +241,6 @@ export default function ScanScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -257,24 +257,20 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 24,
-    backgroundColor: Colors.primary + '1A',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
   },
   message: {
     fontSize: 16,
-    color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
     fontWeight: '400',
   },
   permissionButton: {
-    backgroundColor: Colors.primary,
     borderRadius: 14,
     paddingVertical: 16,
     paddingHorizontal: 32,
-    shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -296,7 +292,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 16,
     alignSelf: 'center',
-    backgroundColor: Colors.surface + 'CC',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -304,7 +299,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   pageCounterText: {
     color: '#fff',
@@ -318,7 +312,6 @@ const styles = StyleSheet.create({
     right: 0,
     paddingBottom: 40,
     paddingTop: 20,
-    backgroundColor: Colors.background + '99',
     alignItems: 'center',
   },
   captureRow: {
@@ -346,11 +339,9 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: Colors.surface + 'CC',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   previewContainer: {
     flex: 1,
@@ -365,7 +356,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
     fontWeight: '600',
-    color: Colors.textSecondary,
     marginTop: 10,
   },
   savingOverlay: {
@@ -377,7 +367,6 @@ const styles = StyleSheet.create({
   savingText: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.textSecondary,
   },
   actions: {
     flexDirection: 'row',
@@ -387,7 +376,6 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: Colors.primary,
     borderRadius: 14,
     paddingVertical: 14,
     justifyContent: 'center',
@@ -398,20 +386,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
     fontSize: 16,
-  },
-  secondaryButton: {
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  secondaryButtonText: {
-    color: Colors.primaryLight,
-  },
-  dangerButton: {
-    backgroundColor: Colors.danger,
-  },
-  successButton: {
-    backgroundColor: Colors.success,
   },
   thumbnailList: {
     paddingTop: 14,
@@ -426,13 +400,11 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   thumbnailRemove: {
     position: 'absolute',
     top: -6,
     right: -6,
-    backgroundColor: Colors.surface,
     borderRadius: 12,
   },
   thumbnailBadge: {
@@ -443,6 +415,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 11,
     fontWeight: '600',
-    color: Colors.textSecondary,
   },
 });

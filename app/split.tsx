@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../constants/colors';
+import { useTheme } from '../contexts/ThemeContext';
 import { getPdfDirectory } from '../utils/fileSystem';
 import { splitPdfByRanges, extractPages } from '../utils/pdfSplit';
 
@@ -30,6 +30,7 @@ export default function SplitScreen() {
   const [loading, setLoading] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
+  const { colors } = useTheme();
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -138,69 +139,77 @@ export default function SplitScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
       <Animated.View
         style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
       >
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
           {/* Select PDF Button */}
-          <TouchableOpacity style={styles.selectButton} onPress={selectPdf}>
-            <View style={styles.selectIconWrapper}>
-              <Ionicons name="document-attach" size={22} color={Colors.warning} />
+          <TouchableOpacity style={[styles.selectButton, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={selectPdf}>
+            <View style={[styles.selectIconWrapper, { backgroundColor: colors.warning + '1A' }]}>
+              <Ionicons name="document-attach" size={22} color={colors.warning} />
             </View>
             <View style={styles.selectTextWrapper}>
-              <Text style={styles.selectTitle}>
+              <Text style={[styles.selectTitle, { color: colors.textPrimary }]}>
                 {pdfUri ? pdfName : 'Select PDF'}
               </Text>
-              <Text style={styles.selectSubtext}>
+              <Text style={[styles.selectSubtext, { color: colors.textMuted }]}>
                 {pdfUri ? `${pageCount} pages estimated` : 'Choose a file to split'}
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
           </TouchableOpacity>
 
           {pdfUri && (
             <>
               {/* Page Count Adjuster */}
-              <View style={styles.pageCountCard}>
-                <Text style={styles.cardLabel}>Number of pages</Text>
+              <View style={[styles.pageCountCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>Number of pages</Text>
                 <View style={styles.pageCountRow}>
                   <TouchableOpacity
-                    style={styles.pageCountButton}
+                    style={[styles.pageCountButton, { backgroundColor: colors.surfaceHigh, borderColor: colors.border }]}
                     onPress={() => setPageCount((prev) => Math.max(1, prev - 1))}
                   >
-                    <Ionicons name="remove" size={20} color={Colors.textPrimary} />
+                    <Ionicons name="remove" size={20} color={colors.textPrimary} />
                   </TouchableOpacity>
-                  <Text style={styles.pageCountText}>{pageCount}</Text>
+                  <Text style={[styles.pageCountText, { color: colors.textPrimary }]}>{pageCount}</Text>
                   <TouchableOpacity
-                    style={styles.pageCountButton}
+                    style={[styles.pageCountButton, { backgroundColor: colors.surfaceHigh, borderColor: colors.border }]}
                     onPress={() => setPageCount((prev) => prev + 1)}
                   >
-                    <Ionicons name="add" size={20} color={Colors.textPrimary} />
+                    <Ionicons name="add" size={20} color={colors.textPrimary} />
                   </TouchableOpacity>
                 </View>
               </View>
 
               {/* Mode Selection */}
-              <View style={styles.modeCard}>
-                <Text style={styles.cardLabel}>Split Mode</Text>
+              <View style={[styles.modeCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>Split Mode</Text>
                 <View style={styles.modeRow}>
                   <Pressable
-                    style={[styles.modeButton, mode === 'range' && styles.modeButtonActive]}
+                    style={[
+                      styles.modeButton,
+                      { backgroundColor: colors.surfaceHigh, borderColor: colors.border },
+                      mode === 'range' && { backgroundColor: colors.warning + '1A', borderColor: colors.warning },
+                    ]}
                     onPress={() => setMode('range')}
                   >
                     <Text
-                      style={[styles.modeText, mode === 'range' && styles.modeTextActive]}
+                      style={[styles.modeText, { color: colors.textSecondary }, mode === 'range' && { color: colors.warning }]}
                     >
                       Split by Range
                     </Text>
                   </Pressable>
                   <Pressable
-                    style={[styles.modeButton, mode === 'extract' && styles.modeButtonActive]}
+                    style={[
+                      styles.modeButton,
+                      { backgroundColor: colors.surfaceHigh, borderColor: colors.border },
+                      mode === 'extract' && { backgroundColor: colors.warning + '1A', borderColor: colors.warning },
+                    ]}
                     onPress={() => setMode('extract')}
                   >
                     <Text
-                      style={[styles.modeText, mode === 'extract' && styles.modeTextActive]}
+                      style={[styles.modeText, { color: colors.textSecondary }, mode === 'extract' && { color: colors.warning }]}
                     >
                       Extract Pages
                     </Text>
@@ -209,38 +218,40 @@ export default function SplitScreen() {
               </View>
 
               {mode === 'range' ? (
-                <View style={styles.rangeCard}>
-                  <Text style={styles.cardLabel}>Page Ranges</Text>
+                <View style={[styles.rangeCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>Page Ranges</Text>
                   <TextInput
-                    style={styles.rangeInput}
+                    style={[styles.rangeInput, { backgroundColor: colors.surfaceHigh, color: colors.textPrimary, borderColor: colors.border }]}
                     placeholder="e.g. 1-3, 4-6"
-                    placeholderTextColor={Colors.textMuted}
+                    placeholderTextColor={colors.textMuted}
                     value={rangeInput}
                     onChangeText={setRangeInput}
                     keyboardType="default"
                     autoCapitalize="none"
                   />
-                  <Text style={styles.hintText}>
+                  <Text style={[styles.hintText, { color: colors.textMuted }]}>
                     Separate ranges with commas. Each range creates a separate PDF.
                   </Text>
                 </View>
               ) : (
-                <View style={styles.pagesCard}>
-                  <Text style={styles.cardLabel}>Select Pages</Text>
+                <View style={[styles.pagesCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>Select Pages</Text>
                   <View style={styles.pagesGrid}>
                     {Array.from({ length: pageCount }, (_, i) => i + 1).map((page) => (
                       <Pressable
                         key={page}
                         style={[
                           styles.pageChip,
-                          selectedPages.has(page) && styles.pageChipActive,
+                          { backgroundColor: colors.surfaceHigh, borderColor: colors.border },
+                          selectedPages.has(page) && { backgroundColor: colors.warning + '1A', borderColor: colors.warning },
                         ]}
                         onPress={() => togglePage(page)}
                       >
                         <Text
                           style={[
                             styles.pageChipText,
-                            selectedPages.has(page) && styles.pageChipTextActive,
+                            { color: colors.textSecondary },
+                            selectedPages.has(page) && { color: colors.warning },
                           ]}
                         >
                           {page}
@@ -254,7 +265,7 @@ export default function SplitScreen() {
               {/* Split Button */}
               <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
                 <TouchableOpacity
-                  style={[styles.splitButton, loading && styles.buttonDisabled]}
+                  style={[styles.splitButton, { backgroundColor: colors.primary, shadowColor: colors.primary }, loading && styles.buttonDisabled]}
                   onPress={handleSplit}
                   onPressIn={handlePressIn}
                   onPressOut={handlePressOut}
@@ -281,7 +292,6 @@ export default function SplitScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   content: {
     flex: 1,
@@ -294,11 +304,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -309,7 +317,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: Colors.warning + '1A',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -317,22 +324,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   selectTitle: {
-    color: Colors.textPrimary,
     fontSize: 15,
     fontWeight: '600',
   },
   selectSubtext: {
-    color: Colors.textMuted,
     fontSize: 13,
     fontWeight: '400',
     marginTop: 2,
   },
   pageCountCard: {
-    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
     marginTop: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -351,25 +354,20 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: Colors.surfaceHigh,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   pageCountText: {
     fontSize: 24,
     fontWeight: '700',
-    color: Colors.textPrimary,
     minWidth: 40,
     textAlign: 'center',
   },
   modeCard: {
-    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
     marginTop: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -380,7 +378,6 @@ const styles = StyleSheet.create({
   cardLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: Colors.textSecondary,
     marginBottom: 4,
   },
   modeRow: {
@@ -392,29 +389,17 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: Colors.surfaceHigh,
     borderWidth: 1,
-    borderColor: Colors.border,
     alignItems: 'center',
-  },
-  modeButtonActive: {
-    backgroundColor: Colors.warning + '1A',
-    borderColor: Colors.warning,
   },
   modeText: {
     fontSize: 14,
     fontWeight: '600',
-    color: Colors.textSecondary,
-  },
-  modeTextActive: {
-    color: Colors.warning,
   },
   rangeCard: {
-    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
     marginTop: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -423,27 +408,21 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   rangeInput: {
-    backgroundColor: Colors.surfaceHigh,
     borderRadius: 12,
     padding: 14,
-    color: Colors.textPrimary,
     fontSize: 15,
     borderWidth: 1,
-    borderColor: Colors.border,
     marginTop: 8,
   },
   hintText: {
     fontSize: 12,
-    color: Colors.textMuted,
     marginTop: 8,
     fontWeight: '400',
   },
   pagesCard: {
-    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
     marginTop: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -461,34 +440,22 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 14,
-    backgroundColor: Colors.surfaceHigh,
     borderWidth: 1,
-    borderColor: Colors.border,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  pageChipActive: {
-    backgroundColor: Colors.warning + '1A',
-    borderColor: Colors.warning,
   },
   pageChipText: {
     fontSize: 15,
     fontWeight: '600',
-    color: Colors.textSecondary,
-  },
-  pageChipTextActive: {
-    color: Colors.warning,
   },
   splitButton: {
     flexDirection: 'row',
-    backgroundColor: Colors.primary,
     borderRadius: 14,
     paddingVertical: 16,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
     marginTop: 20,
-    shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

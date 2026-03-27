@@ -13,42 +13,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../constants/colors';
+import { useTheme } from '../contexts/ThemeContext';
 import { getPdfDirectory, getFileSize } from '../utils/fileSystem';
 import { compressPdf } from '../utils/pdfCompress';
 import * as FileSystem from 'expo-file-system';
 
 type Quality = 'high' | 'medium' | 'low';
-
-const qualityOptions: Array<{
-  key: Quality;
-  label: string;
-  emoji: string;
-  description: string;
-  color: string;
-}> = [
-  {
-    key: 'high',
-    label: 'High',
-    emoji: '🟢',
-    description: '85% quality — Minimal compression',
-    color: Colors.success,
-  },
-  {
-    key: 'medium',
-    label: 'Medium',
-    emoji: '🟡',
-    description: '60% quality — Balanced',
-    color: Colors.warning,
-  },
-  {
-    key: 'low',
-    label: 'Low',
-    emoji: '🔴',
-    description: '35% quality — Maximum compression',
-    color: Colors.danger,
-  },
-];
 
 export default function CompressScreen() {
   const [pdfUri, setPdfUri] = useState<string | null>(null);
@@ -62,6 +32,37 @@ export default function CompressScreen() {
   } | null>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
+  const { colors } = useTheme();
+
+  const qualityOptions: Array<{
+    key: Quality;
+    label: string;
+    emoji: string;
+    description: string;
+    color: string;
+  }> = [
+    {
+      key: 'high',
+      label: 'High',
+      emoji: '🟢',
+      description: '85% quality — Minimal compression',
+      color: colors.success,
+    },
+    {
+      key: 'medium',
+      label: 'Medium',
+      emoji: '🟡',
+      description: '60% quality — Balanced',
+      color: colors.warning,
+    },
+    {
+      key: 'low',
+      label: 'Low',
+      emoji: '🔴',
+      description: '35% quality — Maximum compression',
+      color: colors.danger,
+    },
+  ];
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -134,38 +135,39 @@ export default function CompressScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
       <Animated.View
         style={[styles.content, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
       >
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
           {/* Select PDF Button */}
-          <TouchableOpacity style={styles.selectButton} onPress={selectPdf}>
-            <View style={styles.selectIconWrapper}>
-              <Ionicons name="document-attach" size={22} color={Colors.success} />
+          <TouchableOpacity style={[styles.selectButton, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={selectPdf}>
+            <View style={[styles.selectIconWrapper, { backgroundColor: colors.success + '1A' }]}>
+              <Ionicons name="document-attach" size={22} color={colors.success} />
             </View>
             <View style={styles.selectTextWrapper}>
-              <Text style={styles.selectTitle}>
+              <Text style={[styles.selectTitle, { color: colors.textPrimary }]}>
                 {pdfUri ? pdfName : 'Select PDF'}
               </Text>
-              <Text style={styles.selectSubtext}>
+              <Text style={[styles.selectSubtext, { color: colors.textMuted }]}>
                 {pdfUri ? getFileSize(fileSize) : 'Choose a file to compress'}
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
           </TouchableOpacity>
 
           {pdfUri && (
             <>
               {/* Quality Selection */}
-              <View style={styles.qualityCard}>
-                <Text style={styles.cardLabel}>Compression Quality</Text>
+              <View style={[styles.qualityCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>Compression Quality</Text>
                 <View style={styles.qualityList}>
                   {qualityOptions.map((opt) => (
                     <Pressable
                       key={opt.key}
                       style={[
                         styles.qualityOption,
+                        { backgroundColor: colors.surfaceHigh, borderColor: colors.border },
                         quality === opt.key && {
                           backgroundColor: opt.color + '1A',
                           borderColor: opt.color,
@@ -178,12 +180,13 @@ export default function CompressScreen() {
                         <Text
                           style={[
                             styles.qualityLabel,
+                            { color: colors.textPrimary },
                             quality === opt.key && { color: opt.color },
                           ]}
                         >
                           {opt.label}
                         </Text>
-                        <Text style={styles.qualityDesc}>{opt.description}</Text>
+                        <Text style={[styles.qualityDesc, { color: colors.textMuted }]}>{opt.description}</Text>
                       </View>
                       {quality === opt.key && (
                         <Ionicons name="checkmark-circle" size={22} color={opt.color} />
@@ -195,24 +198,24 @@ export default function CompressScreen() {
 
               {/* Result Card */}
               {result && (
-                <View style={styles.resultCard}>
-                  <Text style={styles.cardLabel}>Compression Result</Text>
+                <View style={[styles.resultCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text style={[styles.cardLabel, { color: colors.textSecondary }]}>Compression Result</Text>
                   <View style={styles.resultRow}>
                     <View style={styles.resultItem}>
-                      <Text style={styles.resultLabel}>Original</Text>
-                      <Text style={styles.resultValue}>{getFileSize(result.originalSize)}</Text>
+                      <Text style={[styles.resultLabel, { color: colors.textMuted }]}>Original</Text>
+                      <Text style={[styles.resultValue, { color: colors.textPrimary }]}>{getFileSize(result.originalSize)}</Text>
                     </View>
-                    <Ionicons name="arrow-forward" size={20} color={Colors.textMuted} />
+                    <Ionicons name="arrow-forward" size={20} color={colors.textMuted} />
                     <View style={styles.resultItem}>
-                      <Text style={styles.resultLabel}>Compressed</Text>
-                      <Text style={[styles.resultValue, { color: Colors.success }]}>
+                      <Text style={[styles.resultLabel, { color: colors.textMuted }]}>Compressed</Text>
+                      <Text style={[styles.resultValue, { color: colors.success }]}>
                         {getFileSize(result.compressedSize)}
                       </Text>
                     </View>
                   </View>
                   {result.originalSize > 0 && (
-                    <View style={styles.savedBadge}>
-                      <Text style={styles.savedText}>
+                    <View style={[styles.savedBadge, { backgroundColor: colors.success + '1A' }]}>
+                      <Text style={[styles.savedText, { color: colors.success }]}>
                         Saved{' '}
                         {Math.max(
                           0,
@@ -232,7 +235,7 @@ export default function CompressScreen() {
               {/* Compress Button */}
               <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
                 <TouchableOpacity
-                  style={[styles.compressButton, loading && styles.buttonDisabled]}
+                  style={[styles.compressButton, { backgroundColor: colors.primary, shadowColor: colors.primary }, loading && styles.buttonDisabled]}
                   onPress={handleCompress}
                   onPressIn={handlePressIn}
                   onPressOut={handlePressOut}
@@ -259,7 +262,6 @@ export default function CompressScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   content: {
     flex: 1,
@@ -272,11 +274,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -287,7 +287,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: Colors.success + '1A',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -295,22 +294,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   selectTitle: {
-    color: Colors.textPrimary,
     fontSize: 15,
     fontWeight: '600',
   },
   selectSubtext: {
-    color: Colors.textMuted,
     fontSize: 13,
     fontWeight: '400',
     marginTop: 2,
   },
   qualityCard: {
-    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
     marginTop: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -321,7 +316,6 @@ const styles = StyleSheet.create({
   cardLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: Colors.textSecondary,
     marginBottom: 10,
   },
   qualityList: {
@@ -333,9 +327,7 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 14,
     borderRadius: 14,
-    backgroundColor: Colors.surfaceHigh,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   qualityEmoji: {
     fontSize: 20,
@@ -346,20 +338,16 @@ const styles = StyleSheet.create({
   qualityLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: Colors.textPrimary,
   },
   qualityDesc: {
     fontSize: 12,
-    color: Colors.textMuted,
     marginTop: 2,
     fontWeight: '400',
   },
   resultCard: {
-    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
     marginTop: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -379,37 +367,31 @@ const styles = StyleSheet.create({
   },
   resultLabel: {
     fontSize: 12,
-    color: Colors.textMuted,
     fontWeight: '400',
   },
   resultValue: {
     fontSize: 18,
     fontWeight: '700',
-    color: Colors.textPrimary,
   },
   savedBadge: {
     alignSelf: 'center',
-    backgroundColor: Colors.success + '1A',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 8,
     marginTop: 12,
   },
   savedText: {
-    color: Colors.success,
     fontWeight: '700',
     fontSize: 14,
   },
   compressButton: {
     flexDirection: 'row',
-    backgroundColor: Colors.primary,
     borderRadius: 14,
     paddingVertical: 16,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
     marginTop: 20,
-    shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
