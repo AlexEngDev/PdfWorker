@@ -16,7 +16,20 @@ A clean, modern PDF utility app built with **React Native** and **Expo**.
 - 🖍️ **Watermark PDF** — Overlay a custom diagonal text watermark on every page (adjustable opacity and size)
 - 🔒 **Protect / Unlock PDF** — Encrypt a PDF with AES-256 password protection, or remove an existing password
 - 🌙 **Dark / Light Theme** — Follows the system colour scheme by default; toggle manually with one tap
+- 🖼️ **PDF to Images** — Extract every page of a PDF as a JPEG image and save to your gallery *(offline-capable)*
+- 📝 **Extract Text (OCR)** — Recognise text in scanned documents and images, entirely on-device — no data leaves your phone *(offline-capable)*
 - 📂 **My Files** — Browse, share, rename, and delete your saved PDFs
+
+## Offline Capabilities
+
+Two features use a WebView-based processing pipeline so that **no image or document data ever leaves your device**:
+
+| Feature | Engine | How it works |
+|---|---|---|
+| **PDF to Images** | [PDF.js](https://mozilla.github.io/pdf.js/) | Each PDF page is rendered to a `<canvas>` inside a hidden WebView and exported as a JPEG. Images are saved to your media library via `expo-media-library`. |
+| **Extract Text (OCR)** | [Tesseract.js](https://tesseract.projectnaptha.com/) | Your image is passed to Tesseract.js running inside a hidden WebView. Recognition runs entirely in JavaScript on the device. Supports English, Russian, German, French, Spanish, and more. |
+
+> **Note:** Both engines are loaded from a CDN on first use. After the initial download they are cached by the WebView and work fully offline. For a fully air-gapped build, bundle the minified JS files under `assets/` and update the `<script src>` paths accordingly.
 
 ## Tech Stack
 
@@ -62,6 +75,8 @@ PdfWorker/
 │   ├── manage-pages.tsx   # Page rotate / delete / reorder
 │   ├── watermark.tsx      # PDF watermark tool
 │   ├── protect-pdf.tsx    # PDF encrypt / decrypt tool
+│   ├── pdf-to-image.tsx   # PDF page extraction to images (offline-capable)
+│   ├── ocr.tsx            # Offline OCR — extract text from images & scans
 │   └── files.tsx          # File manager
 ├── assets/                # App icons and splash images (see assets/README.md)
 ├── components/
