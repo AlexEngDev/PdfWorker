@@ -9,15 +9,20 @@ A clean, modern PDF utility app built with **React Native** and **Expo**.
 - ✍️ **Sign PDFs** — Pick a PDF and draw your signature directly on screen
 - 💾 **Saved Signatures** — Save frequently used signatures and reuse them across documents
 - 🔀 **Merge PDFs** — Combine multiple PDF files into one with drag-to-reorder support
-- ✂️ **Split PDF** — Extract specific pages or split a PDF into multiple files by page range
-- 🗜️ **Compress PDF** — Reduce the file size of a PDF with selectable quality levels
+- ✂️ **Split PDF** — Extract page ranges from a PDF into separate files by range or individual page selection
+- 🗜️ **Compress PDF** — Reduce PDF file size at three quality levels (high / medium / low)
 - 🖼️ **Convert Images to PDF** — Select multiple photos and merge them into a single PDF
-- 📂 **My Files** — Browse, share, and delete your saved PDFs
+- 🔄 **Manage Pages** — Rotate, delete, and reorder individual pages in any PDF
+- 🖍️ **Watermark PDF** — Overlay a custom diagonal text watermark on every page (adjustable opacity and size)
+- 🔒 **Protect / Unlock PDF** — Encrypt a PDF with AES-256 password protection, or remove an existing password
+- 🌙 **Dark / Light Theme** — Follows the system colour scheme by default; toggle manually with one tap
+- 📂 **My Files** — Browse, share, rename, and delete your saved PDFs
 
 ## Tech Stack
 
 - [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/) (managed workflow)
 - [Expo Router](https://expo.github.io/router/) for file-based navigation
+- [pdf-lib](https://pdf-lib.js.org/) for PDF manipulation (page management, watermarks, encryption)
 - TypeScript
 
 ## Getting Started
@@ -46,31 +51,39 @@ Then press `i` for iOS simulator, `a` for Android emulator, or scan the QR code 
 ```
 PdfWorker/
 ├── app/
-│   ├── _layout.tsx      # Tab navigation root
-│   ├── index.tsx        # Home screen
-│   ├── scan.tsx         # Camera scanner (multi-page)
-│   ├── sign.tsx         # PDF signing (with saved signatures)
-│   ├── convert.tsx      # Image-to-PDF converter
-│   ├── merge.tsx        # PDF merge tool
-│   ├── split.tsx        # PDF splitter (by range or page extraction)
-│   ├── compress.tsx     # PDF compression with quality levels
-│   └── files.tsx        # File manager
-├── assets/              # App icons and splash images (see assets/README.md)
+│   ├── _layout.tsx        # Tab navigation root (with ThemeProvider)
+│   ├── index.tsx          # Home screen
+│   ├── scan.tsx           # Camera scanner (multi-page)
+│   ├── sign.tsx           # PDF signing (with saved signatures)
+│   ├── convert.tsx        # Image-to-PDF converter
+│   ├── merge.tsx          # PDF merge tool
+│   ├── split.tsx          # PDF splitter (by range or page extraction)
+│   ├── compress.tsx       # PDF compression with quality levels
+│   ├── manage-pages.tsx   # Page rotate / delete / reorder
+│   ├── watermark.tsx      # PDF watermark tool
+│   ├── protect-pdf.tsx    # PDF encrypt / decrypt tool
+│   └── files.tsx          # File manager
+├── assets/                # App icons and splash images (see assets/README.md)
 ├── components/
 │   ├── ActionButton.tsx
 │   ├── DocumentCard.tsx
 │   └── SignatureCanvas.tsx
 ├── constants/
-│   ├── colors.ts
+│   ├── colors.ts          # DarkColors, LightColors, and Colors (alias for dark)
 │   └── config.ts
+├── contexts/
+│   └── ThemeContext.tsx   # ThemeProvider + useTheme hook
 ├── types/
-│   ├── pdf.ts           # Shared TypeScript types
-│   └── signature.ts     # Saved signature types
+│   ├── pdf.ts
+│   └── signature.ts
 ├── utils/
 │   ├── pdf.ts
 │   ├── pdfMerge.ts
 │   ├── pdfSplit.ts
 │   ├── pdfCompress.ts
+│   ├── pdfManage.ts       # Page rotation / deletion via pdf-lib
+│   ├── pdfWatermark.ts    # Watermark overlay via pdf-lib
+│   ├── pdfProtect.ts      # AES-256 encrypt / decrypt via pdf-lib
 │   ├── fileSystem.ts
 │   ├── signatures.ts
 │   └── permissions.ts

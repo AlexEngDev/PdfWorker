@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../constants/colors';
+import { useTheme } from '../contexts/ThemeContext';
 import { mergePdfs } from '../utils/pdfMerge';
 import { getPdfDirectory } from '../utils/fileSystem';
 import { getFileSize } from '../utils/fileSystem';
@@ -27,6 +27,7 @@ export default function MergeScreen() {
   const [pdfs, setPdfs] = useState<PdfItem[]>([]);
   const [merging, setMerging] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const { colors } = useTheme();
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -98,18 +99,18 @@ export default function MergeScreen() {
   };
 
   const renderItem = ({ item, index }: { item: PdfItem; index: number }) => (
-    <View style={styles.card}>
-      <View style={[styles.cardLeftBorder, { backgroundColor: Colors.accent }]} />
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <View style={[styles.cardLeftBorder, { backgroundColor: colors.accent }]} />
       <View style={styles.cardContent}>
         <View style={styles.cardInfo}>
-          <View style={styles.cardIconWrapper}>
-            <Ionicons name="document-text" size={22} color={Colors.danger} />
+          <View style={[styles.cardIconWrapper, { backgroundColor: colors.danger + '1A' }]}>
+            <Ionicons name="document-text" size={22} color={colors.danger} />
           </View>
           <View style={styles.cardText}>
-            <Text style={styles.cardName} numberOfLines={1}>
+            <Text style={[styles.cardName, { color: colors.textPrimary }]} numberOfLines={1}>
               {item.name}
             </Text>
-            <Text style={styles.cardSize}>{getFileSize(item.size)}</Text>
+            <Text style={[styles.cardSize, { color: colors.textSecondary }]}>{getFileSize(item.size)}</Text>
           </View>
         </View>
         <View style={styles.cardActions}>
@@ -121,7 +122,7 @@ export default function MergeScreen() {
             <Ionicons
               name="chevron-up"
               size={20}
-              color={index === 0 ? Colors.textMuted : Colors.primaryLight}
+              color={index === 0 ? colors.textMuted : colors.primaryLight}
             />
           </TouchableOpacity>
           <TouchableOpacity
@@ -132,11 +133,11 @@ export default function MergeScreen() {
             <Ionicons
               name="chevron-down"
               size={20}
-              color={index === pdfs.length - 1 ? Colors.textMuted : Colors.primaryLight}
+              color={index === pdfs.length - 1 ? colors.textMuted : colors.primaryLight}
             />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => removePdf(index)} style={styles.arrowButton}>
-            <Ionicons name="close-circle" size={20} color={Colors.danger} />
+            <Ionicons name="close-circle" size={20} color={colors.danger} />
           </TouchableOpacity>
         </View>
       </View>
@@ -144,26 +145,26 @@ export default function MergeScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        <TouchableOpacity style={styles.addButton} onPress={addPdf}>
-          <View style={styles.addIconWrapper}>
-            <Ionicons name="add-circle" size={22} color={Colors.primary} />
+        <TouchableOpacity style={[styles.addButton, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={addPdf}>
+          <View style={[styles.addIconWrapper, { backgroundColor: colors.primary + '1A' }]}>
+            <Ionicons name="add-circle" size={22} color={colors.primary} />
           </View>
           <View style={styles.addTextWrapper}>
-            <Text style={styles.addButtonTitle}>Add PDF</Text>
-            <Text style={styles.addButtonSubtext}>Select files to merge</Text>
+            <Text style={[styles.addButtonTitle, { color: colors.textPrimary }]}>Add PDF</Text>
+            <Text style={[styles.addButtonSubtext, { color: colors.textMuted }]}>Select files to merge</Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+          <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
         </TouchableOpacity>
 
         {pdfs.length === 0 ? (
           <View style={styles.emptyState}>
-            <View style={styles.emptyIconWrapper}>
-              <Ionicons name="documents" size={40} color={Colors.textMuted} />
+            <View style={[styles.emptyIconWrapper, { backgroundColor: colors.surfaceHigh }]}>
+              <Ionicons name="documents" size={40} color={colors.textMuted} />
             </View>
-            <Text style={styles.emptyText}>No PDFs added yet</Text>
-            <Text style={styles.emptySubtext}>Tap "Add PDF" to select files to merge</Text>
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No PDFs added yet</Text>
+            <Text style={[styles.emptySubtext, { color: colors.textMuted }]}>Tap "Add PDF" to select files to merge</Text>
           </View>
         ) : (
           <FlatList
@@ -177,7 +178,7 @@ export default function MergeScreen() {
 
         {pdfs.length >= 2 && (
           <TouchableOpacity
-            style={[styles.mergeButton, merging && styles.buttonDisabled]}
+            style={[styles.mergeButton, { backgroundColor: colors.primary, shadowColor: colors.primary }, merging && styles.buttonDisabled]}
             onPress={handleMerge}
             disabled={merging}
           >
@@ -199,7 +200,6 @@ export default function MergeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   content: {
     flex: 1,
@@ -210,11 +210,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -225,7 +223,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: Colors.primary + '1A',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -233,12 +230,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   addButtonTitle: {
-    color: Colors.textPrimary,
     fontSize: 15,
     fontWeight: '600',
   },
   addButtonSubtext: {
-    color: Colors.textMuted,
     fontSize: 13,
     fontWeight: '400',
     marginTop: 2,
@@ -253,7 +248,6 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 22,
-    backgroundColor: Colors.surfaceHigh,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 4,
@@ -261,12 +255,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '700',
-    color: Colors.textSecondary,
     letterSpacing: -0.3,
   },
   emptySubtext: {
     fontSize: 14,
-    color: Colors.textMuted,
     fontWeight: '400',
   },
   list: {
@@ -274,7 +266,6 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   card: {
-    backgroundColor: Colors.surface,
     borderRadius: 16,
     overflow: 'hidden',
     shadowColor: '#000',
@@ -283,7 +274,6 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   cardLeftBorder: {
     position: 'absolute',
@@ -309,7 +299,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: Colors.danger + '1A',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -319,11 +308,9 @@ const styles = StyleSheet.create({
   cardName: {
     fontSize: 14,
     fontWeight: '600',
-    color: Colors.textPrimary,
   },
   cardSize: {
     fontSize: 12,
-    color: Colors.textSecondary,
     marginTop: 2,
     fontWeight: '400',
   },
@@ -338,14 +325,12 @@ const styles = StyleSheet.create({
   },
   mergeButton: {
     flexDirection: 'row',
-    backgroundColor: Colors.primary,
     borderRadius: 14,
     paddingVertical: 16,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
     marginTop: 16,
-    shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

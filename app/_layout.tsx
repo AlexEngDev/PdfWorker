@@ -1,39 +1,41 @@
 import { Tabs } from 'expo-router';
 import { Platform, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../constants/colors';
+import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 
 type IoniconsName = keyof typeof Ionicons.glyphMap;
 
 function TabIcon({ name, activeName, color, focused }: { name: IoniconsName; activeName: IoniconsName; color: string; focused: boolean }) {
+  const { colors } = useTheme();
   return (
     <View style={styles.tabIconContainer}>
-      {focused && <View style={styles.activeIndicator} />}
+      {focused && <View style={[styles.activeIndicator, { backgroundColor: colors.primary }]} />}
       <Ionicons name={focused ? activeName : name} size={24} color={color} />
     </View>
   );
 }
 
-export default function RootLayout() {
+function AppTabs() {
+  const { colors } = useTheme();
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: Colors.textMuted,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textMuted,
         tabBarShowLabel: false,
         tabBarStyle: {
           position: 'absolute',
           bottom: Platform.OS === 'ios' ? 24 : 16,
           left: 20,
           right: 20,
-          backgroundColor: Colors.surface + 'E6',
+          backgroundColor: colors.surface + 'E6',
           borderTopWidth: 0,
           borderRadius: 24,
           height: 64,
           paddingBottom: 8,
           paddingTop: 8,
           borderWidth: 1,
-          borderColor: Colors.border,
+          borderColor: colors.border,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 8 },
           shadowOpacity: 0.4,
@@ -41,11 +43,11 @@ export default function RootLayout() {
           elevation: 12,
         },
         headerStyle: {
-          backgroundColor: Colors.background,
+          backgroundColor: colors.background,
           shadowColor: 'transparent',
           elevation: 0,
         },
-        headerTintColor: Colors.textPrimary,
+        headerTintColor: colors.textPrimary,
         headerTitleStyle: {
           fontWeight: '700',
           fontSize: 18,
@@ -126,11 +128,19 @@ export default function RootLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="viewer"
-        options={{ href: null, headerShown: false }}
-      />
+      <Tabs.Screen name="viewer" options={{ href: null, headerShown: false }} />
+      <Tabs.Screen name="manage-pages" options={{ href: null }} />
+      <Tabs.Screen name="watermark" options={{ href: null }} />
+      <Tabs.Screen name="protect-pdf" options={{ href: null }} />
     </Tabs>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <AppTabs />
+    </ThemeProvider>
   );
 }
 
@@ -146,6 +156,5 @@ const styles = StyleSheet.create({
     width: 20,
     height: 3,
     borderRadius: 2,
-    backgroundColor: Colors.primary,
   },
 });

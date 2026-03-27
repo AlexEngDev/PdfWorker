@@ -13,13 +13,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { Colors } from '../constants/colors';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function ViewerScreen() {
   const { uri, name } = useLocalSearchParams<{ uri: string; name: string }>();
   const [base64, setBase64] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const { colors } = useTheme();
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -64,7 +65,7 @@ export default function ViewerScreen() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
       * { margin: 0; padding: 0; }
-      body { background: ${Colors.background}; width: 100vw; height: 100vh; }
+      body { background: ${colors.background}; width: 100vw; height: 100vh; }
       embed { width: 100%; height: 100%; display: block; }
     </style>
   </head>
@@ -76,11 +77,11 @@ export default function ViewerScreen() {
 
   if (error) {
     return (
-      <SafeAreaView style={styles.centered}>
+      <SafeAreaView style={[styles.centered, { backgroundColor: colors.background }]}>
         <Animated.View style={[styles.errorContainer, { opacity: fadeAnim }]}>
-          <Ionicons name="alert-circle-outline" size={48} color={Colors.danger} />
-          <Text style={styles.errorText}>Failed to load PDF</Text>
-          <Pressable style={styles.goBackButton} onPress={() => router.back()}>
+          <Ionicons name="alert-circle-outline" size={48} color={colors.danger} />
+          <Text style={[styles.errorText, { color: colors.textPrimary }]}>Failed to load PDF</Text>
+          <Pressable style={[styles.goBackButton, { backgroundColor: colors.primary }]} onPress={() => router.back()}>
             <Text style={styles.goBackText}>Go Back</Text>
           </Pressable>
         </Animated.View>
@@ -90,31 +91,31 @@ export default function ViewerScreen() {
 
   if (!base64) {
     return (
-      <SafeAreaView style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+      <SafeAreaView style={[styles.centered, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <Animated.View style={[styles.flex1, { opacity: fadeAnim }]}>
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
           <Pressable style={styles.headerButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back-outline" size={24} color={Colors.textPrimary} />
+            <Ionicons name="arrow-back-outline" size={24} color={colors.textPrimary} />
           </Pressable>
-          <Text style={styles.headerTitle} numberOfLines={1}>
+          <Text style={[styles.headerTitle, { color: colors.textPrimary }]} numberOfLines={1}>
             {name ?? 'PDF Viewer'}
           </Text>
           <Pressable style={styles.headerButton} onPress={handleShare}>
-            <Ionicons name="share-outline" size={24} color={Colors.textPrimary} />
+            <Ionicons name="share-outline" size={24} color={colors.textPrimary} />
           </Pressable>
         </View>
-        <View style={styles.webviewContainer}>
+        <View style={[styles.webviewContainer, { backgroundColor: colors.background }]}>
           <WebView
             originWhitelist={['*']}
             source={{ html }}
-            style={styles.webview}
+            style={[styles.webview, { backgroundColor: colors.background }]}
           />
         </View>
       </Animated.View>
@@ -125,7 +126,6 @@ export default function ViewerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   flex1: {
     flex: 1,
@@ -134,12 +134,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.background,
   },
   header: {
-    backgroundColor: Colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
     paddingHorizontal: 16,
     paddingVertical: 12,
     flexDirection: 'row',
@@ -152,7 +149,6 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    color: Colors.textPrimary,
     fontSize: 16,
     fontWeight: '600',
     marginHorizontal: 12,
@@ -160,11 +156,9 @@ const styles = StyleSheet.create({
   },
   webviewContainer: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   webview: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   errorContainer: {
     alignItems: 'center',
@@ -173,16 +167,14 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 18,
     fontWeight: '600',
-    color: Colors.textPrimary,
   },
   goBackButton: {
-    backgroundColor: Colors.primary,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 16,
   },
   goBackText: {
-    color: Colors.textPrimary,
+    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
