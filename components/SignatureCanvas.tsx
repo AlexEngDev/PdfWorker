@@ -1,7 +1,7 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import SignatureCanvas from 'react-native-signature-canvas';
-import { Colors } from '../constants/colors';
+import { useTheme } from '../contexts/ThemeContext';
 
 type Props = {
   onSignature: (data: string) => void;
@@ -14,6 +14,7 @@ export type SignatureCanvasRef = {
 const SignatureCanvasComponent = forwardRef<SignatureCanvasRef, Props>(
   ({ onSignature }, ref) => {
     const canvasRef = useRef<SignatureCanvas>(null);
+    const { colors } = useTheme();
 
     useImperativeHandle(ref, () => ({
       clearSignature: () => {
@@ -22,7 +23,7 @@ const SignatureCanvasComponent = forwardRef<SignatureCanvasRef, Props>(
     }));
 
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { borderColor: colors.border }]}>
         <SignatureCanvas
           ref={canvasRef}
           onOK={onSignature}
@@ -35,9 +36,9 @@ const SignatureCanvasComponent = forwardRef<SignatureCanvasRef, Props>(
           webStyle={`
             .m-signature-pad { box-shadow: none; border: none; border-radius: 16px; }
             .m-signature-pad--body { border: none; background: #FFFFFF; border-radius: 16px; }
-            .m-signature-pad--footer { background: ${Colors.surfaceHigh}; padding: 10px 12px; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; }
-            .button.clear { background: transparent; border: 1.5px solid ${Colors.danger}; color: ${Colors.danger}; border-radius: 12px; font-weight: 600; }
-            .button.save { background: ${Colors.primary}; color: #fff; border-radius: 12px; font-weight: 600; }
+            .m-signature-pad--footer { background: ${colors.surfaceHigh}; padding: 10px 12px; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; }
+            .button.clear { background: transparent; border: 1.5px solid ${colors.danger}; color: ${colors.danger}; border-radius: 12px; font-weight: 600; }
+            .button.save { background: ${colors.primary}; color: #fff; border-radius: 12px; font-weight: 600; }
           `}
           style={styles.canvas}
         />
@@ -55,7 +56,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: Colors.border,
     backgroundColor: '#FFFFFF',
   },
   canvas: {

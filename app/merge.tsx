@@ -14,8 +14,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { mergePdfs } from '../utils/pdfMerge';
-import { getPdfDirectory } from '../utils/fileSystem';
-import { getFileSize } from '../utils/fileSystem';
+import { getPdfDirectory, getFileSize } from '../utils/fileSystem';
 
 type PdfItem = {
   uri: string;

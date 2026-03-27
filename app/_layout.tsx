@@ -129,9 +129,9 @@ function AppTabs() {
         }}
       />
       <Tabs.Screen name="viewer" options={{ href: null, headerShown: false }} />
-      <Tabs.Screen name="manage-pages" options={{ href: null }} />
-      <Tabs.Screen name="watermark" options={{ href: null }} />
-      <Tabs.Screen name="protect-pdf" options={{ href: null }} />
+      <Tabs.Screen name="manage-pages" options={{ href: null, title: 'Manage Pages' }} />
+      <Tabs.Screen name="watermark" options={{ href: null, title: 'Watermark PDF' }} />
+      <Tabs.Screen name="protect-pdf" options={{ href: null, title: 'Protect / Unlock PDF' }} />
       <Tabs.Screen name="pdf-to-image" options={{ href: null, title: 'PDF to Images' }} />
       <Tabs.Screen name="ocr" options={{ href: null, title: 'Extract Text (OCR)' }} />
     </Tabs>
