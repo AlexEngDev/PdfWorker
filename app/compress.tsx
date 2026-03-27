@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -40,7 +40,7 @@ export default function CompressScreen() {
     emoji: string;
     description: string;
     color: string;
-  }> = [
+  }> = useMemo(() => [
     {
       key: 'high',
       label: 'High',
@@ -62,7 +62,7 @@ export default function CompressScreen() {
       description: '35% quality — Maximum compression',
       color: colors.danger,
     },
-  ];
+  ], [colors]);
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
