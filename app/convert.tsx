@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../constants/colors';
+import { useTheme } from '../contexts/ThemeContext';
 import { createPdfFromImages } from '../utils/pdf';
 import { getPdfDirectory } from '../utils/fileSystem';
 
@@ -21,6 +21,7 @@ export default function ConvertScreen() {
   const [images, setImages] = useState<string[]>([]);
   const [converting, setConverting] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const { colors } = useTheme();
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -65,23 +66,23 @@ export default function ConvertScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        <TouchableOpacity style={styles.pickButton} onPress={pickImages}>
-          <View style={styles.pickIconWrapper}>
-            <Ionicons name="images" size={22} color={Colors.accent} />
+        <TouchableOpacity style={[styles.pickButton, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={pickImages}>
+          <View style={[styles.pickIconWrapper, { backgroundColor: colors.accent + '1A' }]}>
+            <Ionicons name="images" size={22} color={colors.accent} />
           </View>
           <View style={styles.pickTextWrapper}>
-            <Text style={styles.pickButtonTitle}>Add Images</Text>
-            <Text style={styles.pickButtonSubtext}>Select photos from gallery</Text>
+            <Text style={[styles.pickButtonTitle, { color: colors.textPrimary }]}>Add Images</Text>
+            <Text style={[styles.pickButtonSubtext, { color: colors.textMuted }]}>Select photos from gallery</Text>
           </View>
-          <Ionicons name="add-circle" size={24} color={Colors.accent} />
+          <Ionicons name="add-circle" size={24} color={colors.accent} />
         </TouchableOpacity>
 
         {images.length > 0 && (
-          <View style={styles.countBadge}>
-            <Ionicons name="images" size={14} color={Colors.primaryLight} />
-            <Text style={styles.countText}>{images.length} image(s) selected</Text>
+          <View style={[styles.countBadge, { backgroundColor: colors.surfaceHigh }]}>
+            <Ionicons name="images" size={14} color={colors.primaryLight} />
+            <Text style={[styles.countText, { color: colors.textSecondary }]}>{images.length} image(s) selected</Text>
           </View>
         )}
 
@@ -94,10 +95,10 @@ export default function ConvertScreen() {
             <View style={styles.imageWrapper}>
               <Image source={{ uri: item }} style={styles.thumbnail} />
               <TouchableOpacity
-                style={styles.removeButton}
+                style={[styles.removeButton, { backgroundColor: colors.surface }]}
                 onPress={() => removeImage(item)}
               >
-                <Ionicons name="close-circle" size={22} color={Colors.danger} />
+                <Ionicons name="close-circle" size={22} color={colors.danger} />
               </TouchableOpacity>
             </View>
           )}
@@ -105,7 +106,7 @@ export default function ConvertScreen() {
         />
 
         <TouchableOpacity
-          style={[styles.button, (images.length === 0 || converting) && styles.buttonDisabled]}
+          style={[styles.button, { backgroundColor: colors.primary, shadowColor: colors.primary }, (images.length === 0 || converting) && styles.buttonDisabled]}
           onPress={convertToPdf}
           disabled={images.length === 0 || converting}
         >
@@ -126,7 +127,6 @@ export default function ConvertScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   content: {
     flex: 1,
@@ -138,11 +138,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -153,7 +151,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: Colors.accent + '1A',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -161,12 +158,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   pickButtonTitle: {
-    color: Colors.textPrimary,
     fontSize: 15,
     fontWeight: '600',
   },
   pickButtonSubtext: {
-    color: Colors.textMuted,
     fontSize: 13,
     fontWeight: '400',
     marginTop: 2,
@@ -177,13 +172,11 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: Colors.surfaceHigh,
     borderRadius: 12,
     alignSelf: 'flex-start',
   },
   countText: {
     fontSize: 13,
-    color: Colors.textSecondary,
     fontWeight: '600',
   },
   list: {
@@ -208,18 +201,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -6,
     right: -6,
-    backgroundColor: Colors.surface,
     borderRadius: 12,
   },
   button: {
     flexDirection: 'row',
-    backgroundColor: Colors.primary,
     borderRadius: 14,
     paddingVertical: 16,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
-    shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

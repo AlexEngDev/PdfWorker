@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../constants/colors';
+import { useTheme } from '../contexts/ThemeContext';
 
 type Props = {
   label: string;
@@ -10,7 +10,9 @@ type Props = {
   onPress: () => void;
 };
 
-export default function ActionButton({ label, icon, color = Colors.primary, onPress }: Props) {
+export default function ActionButton({ label, icon, color, onPress }: Props) {
+  const { colors } = useTheme();
+  const buttonColor = color ?? colors.primary;
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
@@ -30,17 +32,17 @@ export default function ActionButton({ label, icon, color = Colors.primary, onPr
   return (
     <Animated.View style={[styles.animatedWrapper, { transform: [{ scale: scaleAnim }] }]}>
       <Pressable
-        style={styles.container}
+        style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
       >
-        <View style={[styles.leftBorder, { backgroundColor: color }]} />
-        <View style={[styles.iconWrapper, { backgroundColor: color + '1A' }]}>
-          <Ionicons name={icon} size={24} color={color} />
+        <View style={[styles.leftBorder, { backgroundColor: buttonColor }]} />
+        <View style={[styles.iconWrapper, { backgroundColor: buttonColor + '1A' }]}>
+          <Ionicons name={icon} size={24} color={buttonColor} />
         </View>
-        <Text style={styles.label}>{label}</Text>
-        <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+        <Text style={[styles.label, { color: colors.textPrimary }]}>{label}</Text>
+        <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
       </Pressable>
     </Animated.View>
   );
@@ -53,12 +55,10 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 16,
     gap: 14,
     borderWidth: 1,
-    borderColor: Colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -86,6 +86,5 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.textPrimary,
   },
 });

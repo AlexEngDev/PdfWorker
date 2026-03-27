@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../constants/colors';
+import { useTheme } from '../contexts/ThemeContext';
 import type { PdfFile } from '../types/pdf';
 import { getFileSize } from '../utils/fileSystem';
 
@@ -25,6 +25,7 @@ export default function DocumentCard({ file, onShare, onDelete, onRename, onView
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState('');
+  const { colors } = useTheme();
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
@@ -63,38 +64,38 @@ export default function DocumentCard({ file, onShare, onDelete, onRename, onView
   return (
     <Animated.View style={[styles.cardOuter, { transform: [{ scale: scaleAnim }] }]}>
       <Pressable
-        style={styles.card}
+        style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
       >
-        <View style={styles.iconWrapper}>
-          <Ionicons name="document-text" size={28} color={Colors.danger} />
+        <View style={[styles.iconWrapper, { backgroundColor: colors.danger + '1A' }]}>
+          <Ionicons name="document-text" size={28} color={colors.danger} />
         </View>
         <View style={styles.info}>
           {editing ? (
             <View style={styles.editRow}>
               <TextInput
-                style={styles.editInput}
+                style={[styles.editInput, { backgroundColor: colors.surfaceHigh, color: colors.textPrimary, borderColor: colors.border }]}
                 value={editName}
                 onChangeText={setEditName}
                 autoFocus
                 selectTextOnFocus
                 placeholder="File name"
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={colors.textMuted}
               />
-              <Pressable style={styles.editButton} onPress={saveEditing}>
-                <Ionicons name="checkmark" size={18} color={Colors.success} />
+              <Pressable style={[styles.editButton, { backgroundColor: colors.surfaceHigh }]} onPress={saveEditing}>
+                <Ionicons name="checkmark" size={18} color={colors.success} />
               </Pressable>
-              <Pressable style={styles.editButton} onPress={cancelEditing}>
-                <Ionicons name="close" size={18} color={Colors.danger} />
+              <Pressable style={[styles.editButton, { backgroundColor: colors.surfaceHigh }]} onPress={cancelEditing}>
+                <Ionicons name="close" size={18} color={colors.danger} />
               </Pressable>
             </View>
           ) : (
             <>
-              <Text style={styles.name} numberOfLines={1}>
+              <Text style={[styles.name, { color: colors.textPrimary }]} numberOfLines={1}>
                 {file.name}
               </Text>
-              <Text style={styles.meta}>
+              <Text style={[styles.meta, { color: colors.textSecondary }]}>
                 {formatDate(file.modificationTime)} · {getFileSize(file.size)}
               </Text>
             </>
@@ -104,19 +105,19 @@ export default function DocumentCard({ file, onShare, onDelete, onRename, onView
           <View style={styles.actions}>
             {onView && (
               <Pressable style={styles.actionButton} onPress={onView}>
-                <Ionicons name="eye-outline" size={20} color={Colors.accent} />
+                <Ionicons name="eye-outline" size={20} color={colors.accent} />
               </Pressable>
             )}
             {onRename && (
               <Pressable style={styles.actionButton} onPress={startEditing}>
-                <Ionicons name="pencil-outline" size={20} color={Colors.warning} />
+                <Ionicons name="pencil-outline" size={20} color={colors.warning} />
               </Pressable>
             )}
             <Pressable style={styles.actionButton} onPress={onShare}>
-              <Ionicons name="share-outline" size={20} color={Colors.primaryLight} />
+              <Ionicons name="share-outline" size={20} color={colors.primaryLight} />
             </Pressable>
             <Pressable style={styles.actionButton} onPress={onDelete}>
-              <Ionicons name="trash-outline" size={20} color={Colors.danger} />
+              <Ionicons name="trash-outline" size={20} color={colors.danger} />
             </Pressable>
           </View>
         )}
@@ -132,7 +133,6 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 14,
     gap: 12,
@@ -142,13 +142,11 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   iconWrapper: {
     width: 48,
     height: 48,
     borderRadius: 14,
-    backgroundColor: Colors.danger + '1A',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -158,12 +156,10 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 15,
     fontWeight: '600',
-    color: Colors.textPrimary,
     marginBottom: 3,
   },
   meta: {
     fontSize: 13,
-    color: Colors.textSecondary,
     fontWeight: '400',
   },
   actions: {
@@ -181,18 +177,14 @@ const styles = StyleSheet.create({
   },
   editInput: {
     flex: 1,
-    backgroundColor: Colors.surfaceHigh,
     borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 8,
-    color: Colors.textPrimary,
     fontSize: 14,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   editButton: {
     padding: 8,
     borderRadius: 12,
-    backgroundColor: Colors.surfaceHigh,
   },
 });

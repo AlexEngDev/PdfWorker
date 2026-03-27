@@ -12,7 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../constants/colors';
+import { useTheme } from '../contexts/ThemeContext';
 import DocumentCard from '../components/DocumentCard';
 import { deletePdfFile, listPdfFiles, renamePdfFile, sanitizeFileName } from '../utils/fileSystem';
 import * as Sharing from 'expo-sharing';
@@ -23,6 +23,7 @@ export default function FilesScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const { colors } = useTheme();
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -100,14 +101,14 @@ export default function FilesScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.centered}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+      <SafeAreaView style={[styles.centered, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
       <Animated.View style={[styles.flex1, { opacity: fadeAnim }]}>
         <FlatList
           data={files}
@@ -121,17 +122,17 @@ export default function FilesScreen() {
                 setRefreshing(true);
                 loadFiles();
               }}
-              tintColor={Colors.primary}
-              colors={[Colors.primary]}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
             />
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <View style={styles.emptyIconWrapper}>
-                <Ionicons name="folder-open" size={40} color={Colors.textMuted} />
+              <View style={[styles.emptyIconWrapper, { backgroundColor: colors.surfaceHigh }]}>
+                <Ionicons name="folder-open" size={40} color={colors.textMuted} />
               </View>
-              <Text style={styles.emptyText}>No PDFs found</Text>
-              <Text style={styles.emptySubtext}>
+              <Text style={[styles.emptyText, { color: colors.textPrimary }]}>No PDFs found</Text>
+              <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
                 Scan, convert or sign a document to get started.
               </Text>
             </View>
@@ -154,7 +155,6 @@ export default function FilesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   flex1: {
     flex: 1,
@@ -163,7 +163,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.background,
   },
   list: {
     padding: 16,
@@ -179,7 +178,6 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 22,
-    backgroundColor: Colors.surfaceHigh,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 4,
@@ -187,12 +185,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 20,
     fontWeight: '800',
-    color: Colors.textPrimary,
     letterSpacing: -0.5,
   },
   emptySubtext: {
     fontSize: 14,
-    color: Colors.textSecondary,
     textAlign: 'center',
     fontWeight: '400',
     lineHeight: 22,

@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../constants/colors';
+import { useTheme } from '../contexts/ThemeContext';
 import SignatureCanvasComponent from '../components/SignatureCanvas';
 import { savePdf } from '../utils/pdf';
 import { getPdfDirectory } from '../utils/fileSystem';
@@ -36,6 +36,7 @@ export default function SignScreen() {
   const [savedSignatures, setSavedSignatures] = useState<SavedSignature[]>([]);
   const signatureRef = useRef<{ clearSignature: () => void }>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const { colors } = useTheme();
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -122,12 +123,12 @@ export default function SignScreen() {
       const filename = `signed_${Date.now()}.pdf`;
       const dest = `${dir}/${filename}`;
       const html = `
-        <html><body style="margin:0;padding:20px;background:${Colors.background};">
-          <h3 style="color:${Colors.textPrimary};">Signed Document</h3>
-          <p style="color:${Colors.textSecondary};">Original: ${pdfName}</p>
-          <hr style="border-color:${Colors.border};"/>
-          <p style="color:${Colors.textSecondary};">Signature:</p>
-          <img src="${signatureData}" style="max-width:300px;border:2px solid ${Colors.border};border-radius:12px;" />
+        <html><body style="margin:0;padding:20px;background:${colors.background};">
+          <h3 style="color:${colors.textPrimary};">Signed Document</h3>
+          <p style="color:${colors.textSecondary};">Original: ${pdfName}</p>
+          <hr style="border-color:${colors.border};"/>
+          <p style="color:${colors.textSecondary};">Signature:</p>
+          <img src="${signatureData}" style="max-width:300px;border:2px solid ${colors.border};border-radius:12px;" />
         </body></html>
       `;
       await savePdf(html, dest);
@@ -147,50 +148,50 @@ export default function SignScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
       <Animated.View style={[styles.flex1, { opacity: fadeAnim }]}>
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          <TouchableOpacity style={styles.pickButton} onPress={pickPdf}>
-            <View style={styles.pickIconWrapper}>
-              <Ionicons name="document" size={22} color={Colors.primary} />
+          <TouchableOpacity style={[styles.pickButton, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={pickPdf}>
+            <View style={[styles.pickIconWrapper, { backgroundColor: colors.primary + '1A' }]}>
+              <Ionicons name="document" size={22} color={colors.primary} />
             </View>
             <View style={styles.pickTextWrapper}>
-              <Text style={styles.pickButtonText}>
+              <Text style={[styles.pickButtonText, { color: colors.textPrimary }]}>
                 {pdfUri ? pdfName : 'Select PDF Document'}
               </Text>
               {!pdfUri && (
-                <Text style={styles.pickSubtext}>Tap to choose a file</Text>
+                <Text style={[styles.pickSubtext, { color: colors.textMuted }]}>Tap to choose a file</Text>
               )}
             </View>
-            <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+            <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
           </TouchableOpacity>
 
           {pdfUri && signatureMode === 'choose' && (
             <View style={styles.modeSelection}>
-              <Text style={styles.sectionTitle}>Choose Signature Method</Text>
+              <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Choose Signature Method</Text>
               <View style={styles.modeButtons}>
                 <TouchableOpacity
-                  style={styles.modeCard}
+                  style={[styles.modeCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
                   onPress={() => setSignatureMode('draw')}
                 >
-                  <View style={[styles.modeIconWrapper, { backgroundColor: Colors.primary + '1A' }]}>
-                    <Ionicons name="brush" size={28} color={Colors.primary} />
+                  <View style={[styles.modeIconWrapper, { backgroundColor: colors.primary + '1A' }]}>
+                    <Ionicons name="brush" size={28} color={colors.primary} />
                   </View>
-                  <Text style={styles.modeCardTitle}>Draw</Text>
-                  <Text style={styles.modeCardDesc}>Create a new signature</Text>
+                  <Text style={[styles.modeCardTitle, { color: colors.textPrimary }]}>Draw</Text>
+                  <Text style={[styles.modeCardDesc, { color: colors.textSecondary }]}>Create a new signature</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.modeCard}
+                  style={[styles.modeCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
                   onPress={() => {
                     loadSignatures();
                     setSignatureMode('saved');
                   }}
                 >
-                  <View style={[styles.modeIconWrapper, { backgroundColor: Colors.secondary + '1A' }]}>
-                    <Ionicons name="bookmark" size={28} color={Colors.secondary} />
+                  <View style={[styles.modeIconWrapper, { backgroundColor: colors.secondary + '1A' }]}>
+                    <Ionicons name="bookmark" size={28} color={colors.secondary} />
                   </View>
-                  <Text style={styles.modeCardTitle}>Saved</Text>
-                  <Text style={styles.modeCardDesc}>Use existing signature</Text>
+                  <Text style={[styles.modeCardTitle, { color: colors.textPrimary }]}>Saved</Text>
+                  <Text style={[styles.modeCardDesc, { color: colors.textSecondary }]}>Use existing signature</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -199,10 +200,10 @@ export default function SignScreen() {
           {pdfUri && signatureMode === 'draw' && (
             <>
               <View style={styles.modeHeader}>
-                <Text style={styles.sectionTitle}>Draw Signature</Text>
+                <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Draw Signature</Text>
                 <TouchableOpacity onPress={resetToChoose} style={styles.backButton}>
-                  <Ionicons name="arrow-back" size={16} color={Colors.primaryLight} />
-                  <Text style={styles.backText}>Back</Text>
+                  <Ionicons name="arrow-back" size={16} color={colors.primaryLight} />
+                  <Text style={[styles.backText, { color: colors.primaryLight }]}>Back</Text>
                 </TouchableOpacity>
               </View>
               <SignatureCanvasComponent
@@ -210,7 +211,7 @@ export default function SignScreen() {
                 onSignature={handleSignature}
               />
               <TouchableOpacity
-                style={[styles.button, (!signatureData || saving) && styles.buttonDisabled]}
+                style={[styles.button, { backgroundColor: colors.primary, shadowColor: colors.primary }, (!signatureData || saving) && styles.buttonDisabled]}
                 onPress={saveSignedPdf}
                 disabled={!signatureData || saving}
               >
@@ -229,19 +230,19 @@ export default function SignScreen() {
           {pdfUri && signatureMode === 'saved' && (
             <>
               <View style={styles.modeHeader}>
-                <Text style={styles.sectionTitle}>Saved Signatures</Text>
+                <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Saved Signatures</Text>
                 <TouchableOpacity onPress={resetToChoose} style={styles.backButton}>
-                  <Ionicons name="arrow-back" size={16} color={Colors.primaryLight} />
-                  <Text style={styles.backText}>Back</Text>
+                  <Ionicons name="arrow-back" size={16} color={colors.primaryLight} />
+                  <Text style={[styles.backText, { color: colors.primaryLight }]}>Back</Text>
                 </TouchableOpacity>
               </View>
               {savedSignatures.length === 0 ? (
                 <View style={styles.emptyState}>
-                  <View style={styles.emptyIconWrapper}>
-                    <Ionicons name="bookmark" size={36} color={Colors.textMuted} />
+                  <View style={[styles.emptyIconWrapper, { backgroundColor: colors.surfaceHigh }]}>
+                    <Ionicons name="bookmark" size={36} color={colors.textMuted} />
                   </View>
-                  <Text style={styles.emptyText}>No saved signatures</Text>
-                  <Text style={styles.emptySubtext}>
+                  <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No saved signatures</Text>
+                  <Text style={[styles.emptySubtext, { color: colors.textMuted }]}>
                     Draw a new signature and save it for future use
                   </Text>
                 </View>
@@ -258,7 +259,8 @@ export default function SignScreen() {
                       <TouchableOpacity
                         style={[
                           styles.signatureCard,
-                          signatureData === item.data && styles.signatureCardSelected,
+                          { backgroundColor: colors.surfaceHigh, borderColor: colors.border },
+                          signatureData === item.data && { borderColor: colors.primary },
                         ]}
                         onPress={() => handleSelectSaved(item)}
                         onLongPress={() => handleDeleteSaved(item)}
@@ -270,20 +272,20 @@ export default function SignScreen() {
                             resizeMode="contain"
                           />
                         </View>
-                        <Text style={styles.signatureName} numberOfLines={1}>
+                        <Text style={[styles.signatureName, { color: colors.textPrimary }]} numberOfLines={1}>
                           {item.name}
                         </Text>
                         <TouchableOpacity
-                          style={styles.deleteSignatureBtn}
+                          style={[styles.deleteSignatureBtn, { backgroundColor: colors.surface }]}
                           onPress={() => handleDeleteSaved(item)}
                         >
-                          <Ionicons name="trash" size={14} color={Colors.danger} />
+                          <Ionicons name="trash" size={14} color={colors.danger} />
                         </TouchableOpacity>
                       </TouchableOpacity>
                     )}
                   />
                   <TouchableOpacity
-                    style={[styles.button, (!signatureData || saving) && styles.buttonDisabled]}
+                    style={[styles.button, { backgroundColor: colors.primary, shadowColor: colors.primary }, (!signatureData || saving) && styles.buttonDisabled]}
                     onPress={saveSignedPdf}
                     disabled={!signatureData || saving}
                   >
@@ -309,7 +311,6 @@ export default function SignScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   flex1: {
     flex: 1,
@@ -323,11 +324,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -338,7 +337,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: Colors.primary + '1A',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -346,12 +344,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   pickButtonText: {
-    color: Colors.textPrimary,
     fontSize: 15,
     fontWeight: '600',
   },
   pickSubtext: {
-    color: Colors.textMuted,
     fontSize: 13,
     fontWeight: '400',
     marginTop: 2,
@@ -359,7 +355,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: Colors.textPrimary,
     letterSpacing: -0.3,
   },
   modeSelection: {
@@ -371,7 +366,6 @@ const styles = StyleSheet.create({
   },
   modeCard: {
     flex: 1,
-    backgroundColor: Colors.surface,
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',
@@ -382,7 +376,6 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   modeIconWrapper: {
     width: 56,
@@ -394,13 +387,11 @@ const styles = StyleSheet.create({
   modeCardTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: Colors.textPrimary,
     textAlign: 'center',
   },
   modeCardDesc: {
     fontSize: 13,
     fontWeight: '400',
-    color: Colors.textSecondary,
     textAlign: 'center',
   },
   modeHeader: {
@@ -414,19 +405,16 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   backText: {
-    color: Colors.primaryLight,
     fontWeight: '600',
     fontSize: 14,
   },
   button: {
     flexDirection: 'row',
-    backgroundColor: Colors.primary,
     borderRadius: 14,
     paddingVertical: 16,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
-    shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -449,7 +437,6 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 20,
-    backgroundColor: Colors.surfaceHigh,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 4,
@@ -457,11 +444,9 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.textSecondary,
   },
   emptySubtext: {
     fontSize: 13,
-    color: Colors.textMuted,
     textAlign: 'center',
     lineHeight: 20,
   },
@@ -470,17 +455,12 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   signatureCard: {
-    backgroundColor: Colors.surfaceHigh,
     borderRadius: 16,
     padding: 12,
     width: 150,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: Colors.border,
     marginRight: 12,
-  },
-  signatureCardSelected: {
-    borderColor: Colors.primary,
   },
   signaturePreviewWrapper: {
     backgroundColor: '#fff',
@@ -495,7 +475,6 @@ const styles = StyleSheet.create({
   signatureName: {
     fontSize: 12,
     fontWeight: '600',
-    color: Colors.textPrimary,
     marginTop: 8,
   },
   deleteSignatureBtn: {
@@ -503,7 +482,6 @@ const styles = StyleSheet.create({
     top: 6,
     right: 6,
     padding: 6,
-    backgroundColor: Colors.surface,
     borderRadius: 12,
   },
 });
