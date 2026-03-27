@@ -6,7 +6,6 @@ import {
   FlatList,
   Image,
   ScrollView,
-  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -16,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
+import * as Sharing from 'expo-sharing';
 import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
 import { useTheme } from '../contexts/ThemeContext';
@@ -263,10 +263,16 @@ export default function PdfToImageScreen() {
   };
 
   const sharePage = async (page: ExtractedPage) => {
+    if (!page.fileUri) return;
+    const isAvailable = await Sharing.isAvailableAsync();
+    if (!isAvailable) {
+      Alert.alert('Sharing unavailable', 'Sharing is not available on this device.');
+      return;
+    }
     try {
-      await Share.share({ url: page.fileUri ?? '' });
+      await Sharing.shareAsync(page.fileUri, { mimeType: 'image/jpeg', dialogTitle: `Share Page ${page.pageNum}` });
     } catch {
-      // user cancelled
+      // user cancelled or sharing failed
     }
   };
 
