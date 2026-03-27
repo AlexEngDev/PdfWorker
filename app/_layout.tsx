@@ -130,6 +130,14 @@ export default function RootLayout() {
         name="viewer"
         options={{ href: null, headerShown: false }}
       />
+      <Tabs.Screen
+        name="pdf-to-image"
+        options={{ href: null, title: 'PDF to Images' }}
+      />
+      <Tabs.Screen
+        name="ocr"
+        options={{ href: null, title: 'Extract Text (OCR)' }}
+      />
     </Tabs>
   );
 }

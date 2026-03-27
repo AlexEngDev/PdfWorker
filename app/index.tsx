@@ -59,6 +59,18 @@ const actions = [
     color: Colors.success,
   },
   {
+    label: 'PDF to Images',
+    icon: 'layers' as const,
+    route: '/pdf-to-image' as const,
+    color: Colors.accent,
+  },
+  {
+    label: 'Extract Text (OCR)',
+    icon: 'text' as const,
+    route: '/ocr' as const,
+    color: Colors.primaryLight,
+  },
+  {
     label: 'My Files',
     icon: 'folder' as const,
     route: '/files' as const,

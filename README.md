@@ -10,7 +10,22 @@ A clean, modern PDF utility app built with **React Native** and **Expo**.
 - 💾 **Saved Signatures** — Save frequently used signatures and reuse them across documents
 - 🔀 **Merge PDFs** — Combine multiple PDF files into one with drag-to-reorder support
 - 🖼️ **Convert Images to PDF** — Select multiple photos and merge them into a single PDF
+- ✂️ **Split PDF** — Split a PDF by page ranges or extract individual pages
+- 🗜️ **Compress PDF** — Reduce PDF file size with selectable quality levels
+- 🖼️ **PDF to Images** — Extract every page of a PDF as a JPEG image and save to your gallery *(offline-capable)*
+- 📝 **Extract Text (OCR)** — Recognise text in scanned documents and images, entirely on-device — no data leaves your phone *(offline-capable)*
 - 📂 **My Files** — Browse, share, and delete your saved PDFs
+
+## Offline Capabilities
+
+Two features use a WebView-based processing pipeline so that **no image or document data ever leaves your device**:
+
+| Feature | Engine | How it works |
+|---|---|---|
+| **PDF to Images** | [PDF.js](https://mozilla.github.io/pdf.js/) | Each PDF page is rendered to a `<canvas>` inside a hidden WebView and exported as a JPEG. Images are saved to your media library via `expo-media-library`. |
+| **Extract Text (OCR)** | [Tesseract.js](https://tesseract.projectnaptha.com/) | Your image is passed to Tesseract.js running inside a hidden WebView. Recognition runs entirely in JavaScript on the device. Supports English, Russian, German, French, Spanish, and more. |
+
+> **Note:** Both engines are loaded from a CDN on first use. After the initial download they are cached by the WebView and work fully offline. For a fully air-gapped build, bundle the minified JS files under `assets/` and update the `<script src>` paths accordingly.
 
 ## Tech Stack
 
@@ -50,6 +65,10 @@ PdfWorker/
 │   ├── sign.tsx         # PDF signing (with saved signatures)
 │   ├── convert.tsx      # Image-to-PDF converter
 │   ├── merge.tsx        # PDF merge tool
+│   ├── split.tsx        # PDF split tool
+│   ├── compress.tsx     # PDF compression
+│   ├── pdf-to-image.tsx # PDF page extraction to images (offline OCR-ready)
+│   ├── ocr.tsx          # Offline OCR — extract text from images & scans
 │   └── files.tsx        # File manager
 ├── assets/              # App icons and splash images (see assets/README.md)
 ├── components/
