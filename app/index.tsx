@@ -31,6 +31,8 @@ const actions = [
   { label: 'Manage Pages', icon: 'layers' as const, route: '/manage-pages' as const, colorKey: 'accent' as const },
   { label: 'Watermark PDF', icon: 'water' as const, route: '/watermark' as const, colorKey: 'primary' as const },
   { label: 'Protect / Unlock PDF', icon: 'lock-closed' as const, route: '/protect-pdf' as const, colorKey: 'danger' as const },
+  { label: 'PDF to Images', icon: 'images-outline' as const, route: '/pdf-to-image' as const, colorKey: 'accent' as const },
+  { label: 'Extract Text (OCR)', icon: 'text' as const, route: '/ocr' as const, colorKey: 'primaryLight' as const },
   { label: 'My Files', icon: 'folder' as const, route: '/files' as const, colorKey: 'warning' as const },
 ];
 
